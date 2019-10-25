@@ -8,7 +8,7 @@ type User struct {
 	LastName  string `json:"lastName" pact:"example=McSmiley Face😀😍"`
 	Username  string `json:"username" pact:"example=sally"`
 	Type      string `json:"type" pact:"example=admin,regex=^(admin|user|guest)$"`
-	ID        int    `json:"id" pact:"example=29"`
+	ID        int    `json:"id" pact:"example=10"`
 }
 
 var (

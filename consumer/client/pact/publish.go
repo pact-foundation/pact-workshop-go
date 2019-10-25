@@ -16,7 +16,9 @@ func main() {
 	version := "1.0.0"
 
 	// Publish the Pacts...
-	p := dsl.Publisher{}
+	p := dsl.Publisher{
+		LogLevel: "INFO",
+	}
 
 	fmt.Println("Publishing Pact files to broker", os.Getenv("PACT_DIR"), os.Getenv("PACT_BROKER_URL"))
 	err := p.Publish(types.PublishRequest{

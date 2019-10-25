@@ -30,14 +30,14 @@ publish:
 
 unit:
 	@echo "--- 🔨Running Unit tests "
-	go test -v github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
+	go test -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
 
 consumer:
-	go test -v github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
-	@echo "--- 🔨Running Provider Pact tests "
+	@echo "--- 🔨Running Consumer Pact tests "
+	go test github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
 
 provider:
-	@echo "--- 🔨Running Consumer Pact tests "
-	go test -count=1 -tags=integration -v github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
+	@echo "--- 🔨Running Provider Pact tests "
+	go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
 
 .PHONY: install deploy-consumer deploy-provider publish unit consumer provider

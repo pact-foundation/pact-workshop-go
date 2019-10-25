@@ -6,7 +6,7 @@ github.com/google/uuid
 github.com/hashicorp/go-version
 # github.com/hashicorp/logutils v1.0.0
 github.com/hashicorp/logutils
-# github.com/pact-foundation/pact-go v1.0.1
+# github.com/pact-foundation/pact-go v1.0.2
 github.com/pact-foundation/pact-go/client
 github.com/pact-foundation/pact-go/dsl
 github.com/pact-foundation/pact-go/install

@@ -9,9 +9,7 @@ import (
 )
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/user/", provider.IsAuthenticated(provider.GetUser))
-	mux.HandleFunc("/users/", provider.IsAuthenticated(provider.GetUsers))
+	mux := provider.GetHTTPHandler()
 
 	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {

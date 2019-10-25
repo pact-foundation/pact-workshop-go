@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/pact-foundation/pact-go/dsl"
@@ -23,13 +24,14 @@ func TestPactProvider(t *testing.T) {
 
 	// Verify the Provider - Tag-based Published Pacts for any known consumers
 	_, err := pact.VerifyProvider(t, types.VerifyRequest{
-		ProviderBaseURL:            fmt.Sprintf("http://127.0.0.1:%d", port),
-		Tags:                       []string{"master"},
-		FailIfNoPactsFound:         false,
-		Verbose:                    false,
-		BrokerURL:                  fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
-		BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
-		BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),
+		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
+		Tags:               []string{"master"},
+		FailIfNoPactsFound: false,
+		Verbose:            false,
+		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
+		// BrokerURL:                  fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
+		// BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
+		// BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),
 		PublishVerificationResults: true,
 		ProviderVersion:            "1.0.0",
 		StateHandlers:              stateHandlers,
@@ -42,13 +44,14 @@ func TestPactProvider(t *testing.T) {
 
 }
 
-var token = "" // token will be dynamic based on state etc.
-
 // Simulates the neeed to set a time-bound authorization token,
 // such as an OAuth bearer token
 func fixBearerToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Header.Set("Authorization", token)
+		// Only set the correct bearer token, if one was provided in the first place
+		if r.Header.Get("Authorization") != "" {
+			r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", getAuthToken()))
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -56,23 +59,19 @@ func fixBearerToken(next http.Handler) http.Handler {
 var stateHandlers = types.StateHandlers{
 	"User sally exists": func() error {
 		userRepository = sallyExists
-		token = fmt.Sprintf("Bearer %s", getAuthToken())
 		return nil
 	},
 	"User sally is authenticated": func() error {
 		userRepository = sallyExists
-		token = fmt.Sprintf("Bearer %s", getAuthToken())
 		return nil
 	},
 	"User sally is unauthorized": func() error {
 		userRepository = sallyUnauthorized
-		token = "invalid"
 
 		return nil
 	},
 	"User sally is unauthenticated": func() error {
 		userRepository = sallyUnauthorized
-		token = "invalid"
 
 		return nil
 	},
@@ -85,9 +84,7 @@ var stateHandlers = types.StateHandlers{
 // Starts the provider API with hooks for provider states.
 // This essentially mirrors the main.go file, with extra routes added.
 func startInstrumentedProvider() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/user/", IsAuthenticated(GetUser))
-	mux.HandleFunc("/users/", IsAuthenticated(GetUsers))
+	mux := GetHTTPHandler()
 
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
