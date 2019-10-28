@@ -1,259 +1,165 @@
-# Example JS project for the Pact workshop
+# Example project for the Pact workshop
 
 This project has 2 components, a consumer project and a service provider as an Express API.
 
 _NOTE: Each step is tied to, and must be run within, a git branch, allowing you to progress through each stage incrementally. For example, to move to step 2 run the following: `git checkout step2`_
 
+
+
 ## Scenario
 
 There are two components in scope for our workshop.
 
-1. User Service (Consumer). Provides useful things about a user, including the current orders
-1. Order Service (Provider). It's job is to be able to retreive and place Orders
+1. Admin Service (Consumer). Does Admin-y things, and often needs to communicate to the User service. But really, it's just a label - it doesn't do much!
+1. User Service (Provider). Provides useful things about a user, such as listing all users and getting the details of individuals.
 
-For the purposes of this workshop, we won't implement any functionality of the User Service, except the bits that requires ordering information.
+For the purposes of this workshop, we won't implement any functionality of the Admin Service, except the bits that requires User information.
 
+Whilst contract testing can be applied retrospectively to systems, we will follow the [consumer driven contracts](https://martinfowler.com/articles/consumerDrivenContracts.html) approach in this workshop - where a new consumer and provider are created in parallel to evolve a service over time.
 
 ## Step 1 - Simple Consumer calling Provider
 
-Given we have a client that needs to make a HTTP GET request to a provider service, and requires a response in JSON format.
+We need to first create an HTTP client to make the calls to our provider service:
 
 ![Simple Consumer](diagrams/workshop_step1.png)
 
-The consumer client is quite simple and looks like this
+*NOTE*: even if the API client had been been graciously provided for us by our Provider Team, it doesn't mean that we shouldn't write contract tests - because the version of the client we have may not always be in sync with the deployed API - and also because we will write tests on the output appropriate to our specific needs.
 
-_consumer/consumer.js:_
+This User Service expects a `user` path parameter, and then returns some simple json back:
 
-```js
-request
-  .get(`${API_ENDPOINT}/provider`)
-  .query({ validDate: new Date().toISOString() })
-  .then(res => {
-    console.log(res.body)
-  })
-```
+![Sequence Diagram](diagrams/workshop_step1_class-sequence-diagram.png)
 
-and the express provider resource
+Great! We've created a client (see the `consumer/client` package).
 
-_provider/provider.js:_
-
-```js
-server.get('/provider/:', (req, res) => {
-  const date = req.query.validDate
-
-  res.json({
-    test: 'NO',
-    validDate: new Date().toISOString(),
-    count: 100,
-  })
-})
-```
-
-This providers expects a `validDate` parameter in HTTP date format, and then return some simple json back.
-
-![Sequence Diagram](diagrams/sequence_diagram.png)
-
-Start the provider in a separate terminal:
-
-```
-$ node provider/provider.js
-Provider Service listening on http://localhost:9123
-```
-
-Running the client works nicely.
-
-```
-$ node consumer/consumer.js
-{ test: 'NO', validDate: '2017-06-12T06:25:42.392Z', count: 100 }
-```
-
+We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
 
 ## Step 2 - Client Tested but integration fails
 
-Now lets separate the API client (collaborator) that uses the data it gets back from the provider into its own module. Here is the updated client method that uses the returned data:
+Now lets create a basic test for our API client. We're going to check 2 things:
 
-*consumer/client.js:*
+1. That our client code hit the expected endpoint
+1. That the response is marshalled into a `User` object, with the correct ID
 
-```js
-const fetchProviderData = () => {
-  return request
-    .get(`${API_ENDPOINT}/provider`)
-    .query({validDate: new Date().toISOString()})
-    .then((res) => {
-      return {
-        value: 100 / res.body.count,
-        date: res.body.date
-      }
-    })
+*consumer/client/client_test.go*
+
+```go
+func TestClientUnit_GetUser(t *testing.T) {
+	userID := 10
+
+	// Setup mock server
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		assert.Equal(t, req.URL.String(), fmt.Sprintf("/user/%d", userID))
+		user, _ := json.Marshal(model.User{
+			FirstName: "Sally",
+			LastName:  "McDougall",
+			ID:        userID,
+			Type:      "admin",
+			Username:  "smcdougall",
+		})
+		rw.Write([]byte(user))
+	}))
+	defer server.Close()
+
+	// Setup client
+	u, _ := url.Parse(server.URL)
+	client := &Client{
+		BaseURL: u,
+	}
+	user, err := client.GetUser(userID)
+	assert.NoError(t, err)
+
+	// Assert basic fact
+	assert.Equal(t, user.ID, userID)
 }
+
 ```
 
-The consumer is now a lot simpler:
-
-*consumer/consumer.js:*
-
-```js
-const client = require('./client')
-
-client.fetchProviderData().then(response => console.log(response))
-```
-
-![Sequence 2](diagrams/step2_sequence_diagram.png)
-
-Let's now test our updated client.
-
-*consumer/test/consumer.spec.js:*
-
-```js
-describe('Consumer', () => {
-  describe('when a call to the Provider is made', () => {
-    const date = '2013-08-16T15:31:20+10:00'
-    nock(API_HOST)
-      .get('/provider')
-      .query({validDate: /.*/})
-      .reply(200, {
-        test: 'NO',
-        date: date,
-        count: 1000
-      })
-
-    it('can process the JSON payload from the provider', done => {
-      const {fetchProviderData} = require('../consumer')
-      const response = fetchProviderData()
-
-      expect(response).to.eventually.have.property('count', 1000)
-      expect(response).to.eventually.have.property('date', date).notify(done)
-    })
-  })
-})
-```
-
-![Unit Test With Mocked Response](diagrams/step2_unit_test.png)
+![Unit Test With Mocked Response](diagrams/workshop_step2_unit_test.png)
 
 Let's run this spec and see it all pass:
 
 ```
-$ npm run test:consumer
+$ make unit
 
-> pact-workshop-js@1.0.0 test:consumer /Users/mfellows/development/public/pact-workshop-js
-> mocha consumer/test/consumer.spec.js
+--- 🔨Running Unit tests
+go test -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
+ok  	github.com/pact-foundation/pact-workshop-go/consumer/client	10.196s
+```
 
-
-
-  Consumer
-    when a call to the Provider is made
-      ✓ can process the JSON payload from the provider
+Meanwhile, our provider team has started building out their API in parallel. Let's run our client against our provider (you'll need two terminals to do this):
 
 
-  1 passing (24ms)
+```
+# Terminal 1
+$ make run-provider 
+
+2019/10/28 18:24:37 API starting: port 8080 ([::]:8080)
+
+# Terminal 2
+make run-consumer
+
+2019/10/28 18:25:57 api unavailable
+exit status 1
+make: *** [run-consumer] Error 1
 
 ```
 
-However, there is a problem with this integration point. Running the actual client against any of the providers results in problem!
+Doh! The Provider doesn't know about `/users/:id`. On closer inspection, the provider only knows about `/user/:id` and `/users`.
 
-```
-$ node consumer/consumer.js
-{ count: 100, date: undefined }
-```
-
-The provider returns a `validDate` while the consumer is
-trying to use `date`, which will blow up when run for real even with the tests all passing. Here is where Pact comes in.
+We need to have a conversation about what the endpoint should be, but first...
 
 ## Step 3 - Pact to the rescue
 
-Let us add Pact to the project and write a consumer pact test.
+Let us add Pact to the project and write a consumer pact test for the `GET /users/:id` endpoint. Note how similar it looks to our unit test:
 
-*consumer/test/consumerPact.spec.js:*
+*consumer/client/client_pact_test.go:*
 
-```js
-const provider = pact({
-  consumer: 'Our Little Consumer',
-  provider: 'Our Provider',
-  port: API_PORT,
-  log: path.resolve(process.cwd(), 'logs', 'pact.log'),
-  dir: path.resolve(process.cwd(), 'pacts'),
-  logLevel: LOG_LEVEL,
-  spec: 2
-})
-const submissionDate = new Date().toISOString()
-const date = '2013-08-16T15:31:20+10:00'
-const expectedBody = {
-  test: 'NO',
-  date: date,
-  count: 1000
-}
+```go
+	t.Run("the user exists", func(t *testing.T) {
+		id := 10
 
-describe('Pact with Our Provider', () => {
-  describe('given data count > 0', () => {
-    describe('when a call to the Provider is made', () => {
-      before(() => {
-        return provider.setup()
-          .then(() => {
-            provider.addInteraction({
-              uponReceiving: 'a request for JSON data',
-              withRequest: {
-                method: 'GET',
-                path: '/provider',
-                query: {
-                  validDate: submissionDate
-                }
-              },
-              willRespondWith: {
-                status: 200,
-                headers: {
-                  'Content-Type': 'application/json; charset=utf-8'
-                },
-                body: expectedBody
-              }
-            })
-          })
-      })
+		pact.
+			AddInteraction().
+			Given("User sally exists").
+			UponReceiving("A request to login with user 'sally'").
+			WithRequest(request{
+				Method:  "GET",
+				Path:    term("/users/10", "/user/[0-9]+"),
+				Headers: headersWithToken,
+			}).
+			WillRespondWith(dsl.Response{
+				Status:  200,
+				Body:    dsl.Match(model.User{}),
+				Headers: commonHeaders,
+			})
 
-      it('can process the JSON payload from the provider', done => {
-        const response = fetchProviderData(submissionDate)
+		err := pact.Verify(func() error {
+			user, err := client.WithToken("2019-01-01").GetUser(id)
 
-        expect(response).to.eventually.have.property('count', 1000)
-        expect(response).to.eventually.have.property('date', date).notify(done)
-      })
+			// Assert basic fact
+			if user.ID != id {
+				return fmt.Errorf("wanted user with ID %d but got %d", id, user.ID)
+			}
 
-      it('should validate the interactions and create a contract', () => {
-        return provider.verify()
-      })
-    })
+			return err
+		})
 
-    // Write pact files to file
-    after(() => {
-      return provider.finalize()
-    })
-  })
-})
+		if err != nil {
+			t.Fatalf("Error on Verify: %v", err)
+		}
+	})
 ```
 
 
 ![Test using Pact](diagrams/step3_pact.png)
 
 
-This test starts a mock server on port 1234 that pretends to be our provider. To get this to work we needed to update
-our consumer to pass in the URL of the provider. We also updated the `fetchProviderData` method to pass in the
-query parameter.
+This test starts a mock server a random port that actsio as our provider service. To get this to work we update the URL in the `Client` that we create, after initialising Pact.
 
-Running this spec still passes, but it creates a pact file which we can use to validate our assumptions on the provider side.
+Running this test still passes, but it creates a pact file which we can use to validate our assumptions on the provider side, and have conversation around.
 
 ```console
-$ npm run "test:pact:consumer"
-
-> pact-workshop-js@1.0.0 test:pact:consumer /Users/mfellows/development/public/pact-workshop-js
-> mocha consumer/test/consumerPact.spec.js
-
-  Pact with Our Provider
-    when a call to the Provider is made
-      when data count > 0
-        ✓ can process the JSON payload from the provider
-        ✓ should validate the interactions and create a contract
-
-
-  2 passing (571ms)
-
+$ make consumer
 ```
 
 Generated pact file (*pacts/our_little_consumer-our_provider.json*):

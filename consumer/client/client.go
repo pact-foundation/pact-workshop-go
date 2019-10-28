@@ -27,18 +27,24 @@ func (c *Client) WithToken(token string) *Client {
 
 // GetUser gets a single user from the API
 func (c *Client) GetUser(id int) (*model.User, error) {
-	req, err := c.newRequest("GET", fmt.Sprintf("/user/%d", id), nil)
+	req, err := c.newRequest("GET", fmt.Sprintf("/users/%d", id), nil)
 	if err != nil {
 		return nil, err
 	}
 	var user model.User
 	res, err := c.do(req, &user)
 
-	switch res.StatusCode {
-	case http.StatusNotFound:
-		return nil, ErrNotFound
-	case http.StatusUnauthorized:
-		return nil, ErrUnauthorized
+	if res != nil {
+		switch res.StatusCode {
+		case http.StatusNotFound:
+			return nil, ErrNotFound
+		case http.StatusUnauthorized:
+			return nil, ErrUnauthorized
+		}
+	}
+
+	if err != nil {
+		return nil, ErrUnavailable
 	}
 
 	return &user, err
@@ -103,4 +109,6 @@ var (
 
 	// ErrUnauthorized represents a Forbidden (403)
 	ErrUnauthorized = errors.New("unauthorized")
+
+	ErrUnavailable = errors.New("api unavailable")
 )

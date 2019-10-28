@@ -25,20 +25,28 @@ var u *url.URL
 var client *Client
 
 func TestMain(m *testing.M) {
-	// Setup Pact and related test stuff
-	setup()
+	var exitCode int
 
-	// Run all the tests
-	code := m.Run()
+	if os.Getenv("PACT_TEST") != "" {
 
-	// Shutdown the Mock Service and Write pact files to disk
-	if err := pact.WritePact(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Println("PACT_TEST not null")
+		// Setup Pact and related test stuff
+		setup()
+
+		// Run all the tests
+		exitCode = m.Run()
+
+		// Shutdown the Mock Service and Write pact files to disk
+		if err := pact.WritePact(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		pact.Teardown()
+	} else {
+		exitCode = m.Run()
 	}
-
-	pact.Teardown()
-	os.Exit(code)
+	os.Exit(exitCode)
 }
 
 func TestClientPact_GetUser(t *testing.T) {
