@@ -30,25 +30,12 @@ func TestPactProvider(t *testing.T) {
 		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
 		ProviderVersion:    "1.0.0",
 		StateHandlers:      stateHandlers,
-		RequestFilter:      fixBearerToken,
 	})
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-}
-
-// Simulates the neeed to set a time-bound authorization token,
-// such as an OAuth bearer token
-func fixBearerToken(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Only set the correct bearer token, if one was provided in the first place
-		if r.Header.Get("Authorization") != "" {
-			r.Header.Set("Authorization", getAuthToken())
-		}
-		next.ServeHTTP(w, r)
-	})
 }
 
 var stateHandlers = types.StateHandlers{
