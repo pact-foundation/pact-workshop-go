@@ -33,6 +33,13 @@ deploy-provider:
 publish:
 	@echo "--- 📝 Publishing Pacts"
 	go run consumer/client/pact/publish.go
+	@echo 
+	@echo Pact contract publishing complete!
+	@echo 
+	@echo Head over to $(PACT_BROKER_PROTO)://$(PACT_BROKER_URL) and login with
+	@echo => Username: $(PACT_BROKER_USERNAME)
+	@echo => Password: $(PACT_BROKER_PASSWORD)
+	@echo to see your published contracts.	
 
 unit:
 	@echo "--- 🔨Running Unit tests "

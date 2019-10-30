@@ -27,7 +27,7 @@ func (c *Client) WithToken(token string) *Client {
 
 // GetUser gets a single user from the API
 func (c *Client) GetUser(id int) (*model.User, error) {
-	req, err := c.newRequest("GET", fmt.Sprintf("/users/%d", id), nil)
+	req, err := c.newRequest("GET", fmt.Sprintf("/user/%d", id), nil)
 	if err != nil {
 		return nil, err
 	}

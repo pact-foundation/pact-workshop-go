@@ -28,7 +28,7 @@ var userRepository = &repository.UserRepository{
 
 // Crude time-bound "bearer" token
 func getAuthToken() string {
-	return time.Now().Format("2006-01-02")
+	return fmt.Sprintf("Bearer %s", time.Now().Format("2006-01-02T15:04"))
 }
 
 // IsAuthenticated checks for a correct bearer token
@@ -43,7 +43,7 @@ func WithCorrelationID(h http.HandlerFunc) http.HandlerFunc {
 // IsAuthenticated checks for a correct bearer token
 func IsAuthenticated(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Authorization") == fmt.Sprintf("Bearer %s", getAuthToken()) {
+		if r.Header.Get("Authorization") == getAuthToken() {
 			h.ServeHTTP(w, r)
 		} else {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")

@@ -111,6 +111,7 @@ func TestClientPact_GetUser(t *testing.T) {
 	t.Run("not authenticated", func(t *testing.T) {
 		pact.
 			AddInteraction().
+			Given("User is not authenticated").
 			UponReceiving("A request to login with user 'sally'").
 			WithRequest(request{
 				Method: "GET",

@@ -26,11 +26,10 @@ func TestPactProvider(t *testing.T) {
 		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
 		Tags:               []string{"master"},
 		FailIfNoPactsFound: false,
-		Verbose:            false,
-		BrokerURL:          fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
-		BrokerUsername:     os.Getenv("PACT_BROKER_USERNAME"),
 		// Use this if you want to test without the Pact Broker
-		// PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
+		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
+		BrokerURL:                  fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
+		BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
 		BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),
 		PublishVerificationResults: true,
 		ProviderVersion:            "1.0.0",
@@ -50,7 +49,7 @@ func fixBearerToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only set the correct bearer token, if one was provided in the first place
 		if r.Header.Get("Authorization") != "" {
-			r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", getAuthToken()))
+			r.Header.Set("Authorization", getAuthToken())
 		}
 		next.ServeHTTP(w, r)
 	})
@@ -59,20 +58,6 @@ func fixBearerToken(next http.Handler) http.Handler {
 var stateHandlers = types.StateHandlers{
 	"User sally exists": func() error {
 		userRepository = sallyExists
-		return nil
-	},
-	"User sally is authenticated": func() error {
-		userRepository = sallyExists
-		return nil
-	},
-	"User sally is unauthorized": func() error {
-		userRepository = sallyUnauthorized
-
-		return nil
-	},
-	"User sally is unauthenticated": func() error {
-		userRepository = sallyUnauthorized
-
 		return nil
 	},
 	"User sally does not exist": func() error {
