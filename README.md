@@ -1,21 +1,35 @@
-# Example project for the Pact workshop
+# Pact Go workshop
 
-This project has 2 components, a consumer project and a service provider as an Express API.
+## Introduction
+This workshop is aimed at demonstrating core features and benefits of contract testing with Pact. It uses a simple example
+
+Whilst contract testing can be applied retrospectively to systems, we will follow the [consumer driven contracts](https://martinfowler.com/articles/consumerDrivenContracts.html) approach in this workshop - where a new consumer and provider are created in parallel to evolve a service over time, especially where there is some uncertainty with what is to be built.
+
+This workshop should take from 1 to 2 hours, depending on how deep you want to go into each topic.
+
+**Workshop outline**:
+
+- [step 1: **create consumer**](//github.com/pact-foundation/pact-workshop-go/tree/step1): Create our consumer before the Provider API even exists
+- [step 2: **unit test**](//github.com/pact-foundation/pact-workshop-go/tree/step2): Write a unit test for our consumer
+- [step 3: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step3): Write a Pact test for our consumer
+- [step 4: **pact verification**](//github.com/pact-foundation/pact-workshop-go/tree/step4): Verify the consumer pact with the Provider API
+- [step 5: **fix consumer**](//github.com/pact-foundation/pact-workshop-go/tree/step5): Fix the consumer's bad assumptions about the Provider
+- [step 6: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step6): Write a pact test for `404` (missing User) in consumer
+- [step 7: **provider states**](//github.com/pact-foundation/pact-workshop-go/tree/step7): Update API to handle `404` case
+- [step 8: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step8): Write a pact test for the `401` case
+- [step 9: **request filters**](//github.com/pact-foundation/pact-workshop-go/tree/step9): Fix the provider to support the `401` case
+- [step 10: **pact broker**](//github.com/pact-foundation/pact-workshop-go/tree/step10): Implement a broker workflow for integration with CI/CD
 
 _NOTE: Each step is tied to, and must be run within, a git branch, allowing you to progress through each stage incrementally. For example, to move to step 2 run the following: `git checkout step2`_
-
-
 
 ## Scenario
 
 There are two components in scope for our workshop.
 
-1. Admin Service (Consumer). Does Admin-y things, and often needs to communicate to the User service. But really, it's just a label - it doesn't do much!
+1. Admin Service (Consumer). Does Admin-y things, and often needs to communicate to the User service. But really, it's just a placeholder for a more useful consumer (e.g. a website or another microservice) - it doesn't do much!
 1. User Service (Provider). Provides useful things about a user, such as listing all users and getting the details of individuals.
 
-For the purposes of this workshop, we won't implement any functionality of the Admin Service, except the bits that requires User information.
-
-Whilst contract testing can be applied retrospectively to systems, we will follow the [consumer driven contracts](https://martinfowler.com/articles/consumerDrivenContracts.html) approach in this workshop - where a new consumer and provider are created in parallel to evolve a service over time.
+For the purposes of this workshop, we won't implement any functionality of the Admin Service, except the bits that require User information.
 
 ## Step 1 - Simple Consumer calling Provider
 
@@ -165,7 +179,7 @@ $ make consumer
 A pact file should have been generated in *pacts/goadminservice-gouserservice.json*
 
 
-# Step 4 - Verify the provider
+## Step 4 - Verify the provider
 
 ![Pact Verification](diagrams/workshop_step4_pact.png)
 
@@ -336,7 +350,7 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 ```
 
-## Step 8 - Add Authorisation to our API
+## Step 8 - Authorization
 
 It turns out that not everyone should be able to use the API. After a discussion with the team, it was decided that a time-bound bearer token would suffice. 
 
@@ -376,7 +390,7 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 
 Like most tokens, our bearer token is going to be dependent on the date/time it was generated. For the purposes of our API, it's rather crude:
 
-```
+```go
 func getAuthToken() string {
 	return fmt.Sprintf("Bearer %s", time.Now().Format("2006-01-02T15:04"))
 }
@@ -390,7 +404,7 @@ Authorization: Bearer 2006-01-02T15:04
 
 We have created a small middleware to wrap our functions and return a `401`:
 
-```
+```go
 func IsAuthenticated(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") == getAuthToken() {
