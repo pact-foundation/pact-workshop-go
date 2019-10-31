@@ -47,6 +47,10 @@ var stateHandlers = types.StateHandlers{
 		userRepository = sallyDoesNotExist
 		return nil
 	},
+	"User is not authenticated": func() error {
+		userRepository = sallyExists
+		return nil
+	},
 }
 
 // Starts the provider API with hooks for provider states.
