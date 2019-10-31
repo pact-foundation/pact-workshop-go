@@ -21,9 +21,4 @@ consumer:
 	@echo "--- 🔨Running Consumer Pact tests "
 	go test -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
 
-provider: export PACT_TEST := true
-provider:
-	@echo "--- 🔨Running Provider Pact tests "
-	go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
-
-.PHONY: install unit consumer provider run-provider run-consumer
+.PHONY: install unit consumer  run-provider run-consumer
