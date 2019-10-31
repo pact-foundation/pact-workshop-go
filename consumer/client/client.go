@@ -25,14 +25,7 @@ func (c *Client) GetUser(id int) (*model.User, error) {
 		return nil, err
 	}
 	var user model.User
-	res, err := c.do(req, &user)
-
-	if res != nil {
-		switch res.StatusCode {
-		case http.StatusNotFound:
-			return nil, ErrNotFound
-		}
-	}
+	_, err = c.do(req, &user)
 
 	if err != nil {
 		return nil, ErrUnavailable
@@ -92,8 +85,5 @@ func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
 }
 
 var (
-	// ErrNotFound represents a resource not found (404)
-	ErrNotFound = errors.New("not found")
-
 	ErrUnavailable = errors.New("api unavailable")
 )

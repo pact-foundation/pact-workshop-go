@@ -9,7 +9,6 @@ import (
 
 	"github.com/pact-foundation/pact-go/dsl"
 	"github.com/pact-foundation/pact-workshop-go/model"
-	"github.com/stretchr/testify/assert"
 )
 
 var commonHeaders = dsl.MapMatcher{
@@ -77,29 +76,6 @@ func TestClientPact_GetUser(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error on Verify: %v", err)
 		}
-	})
-
-	t.Run("the user does not exist", func(t *testing.T) {
-		pact.
-			AddInteraction().
-			Given("User sally does not exist").
-			UponReceiving("A request to login with user 'sally'").
-			WithRequest(request{
-				Method: "GET",
-				Path:   term("/user/10", "/user/[0-9]+"),
-			}).
-			WillRespondWith(dsl.Response{
-				Status:  404,
-				Headers: commonHeaders,
-			})
-
-		err := pact.Verify(func() error {
-			_, err := client.GetUser(10)
-
-			return err
-		})
-
-		assert.Equal(t, ErrNotFound, err)
 	})
 }
 
