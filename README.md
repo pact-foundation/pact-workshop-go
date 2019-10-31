@@ -48,6 +48,8 @@ Great! We've created a client (see the `consumer/client` package).
 
 We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
 
+*Move on to [step 2](//github.com/pact-foundation/pact-workshop-go/tree/step2): Write a unit test for our consumer*
+
 ## Step 2 - Client Tested but integration fails
 
 Now lets create a basic test for our API client. We're going to check 2 things:
@@ -123,6 +125,8 @@ Doh! The Provider doesn't know about `/users/:id`. On closer inspection, the pro
 
 We need to have a conversation about what the endpoint should be, but first...
 
+*Move on to [step 3](//github.com/pact-foundation/pact-workshop-go/tree/step3)*
+
 ## Step 3 - Pact to the rescue
 
 Let us add Pact to the project and write a consumer pact test for the `GET /users/:id` endpoint. Note how similar it looks to our unit test:
@@ -179,6 +183,7 @@ $ make consumer
 
 A pact file should have been generated in *pacts/goadminservice-gouserservice.json*
 
+*Move on to [step 4](//github.com/pact-foundation/pact-workshop-go/tree/step4)*
 
 ## Step 4 - Verify the provider
 
@@ -229,4 +234,4 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 
 The test has failed, as the expected path `/users/:id` is actually triggering the `/users` endpoint (which we don't need), and returning a _list_ of Users instead of a _single_ User. We incorrectly believed our provider was following a RESTful design, but the authors were too lazy to implement a better routing solution 🤷🏻‍♂️.
 
-The correct endpoint should be `/user/:id`.
+*Move on to [step 5](//github.com/pact-foundation/pact-workshop-go/tree/step5)*
