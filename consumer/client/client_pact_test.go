@@ -17,10 +17,6 @@ var commonHeaders = dsl.MapMatcher{
 	"X-Api-Correlation-Id": dsl.Like("100"),
 }
 
-var headersWithToken = dsl.MapMatcher{
-	"Authorization": dsl.Like("Bearer 2019-01-01"),
-}
-
 var u *url.URL
 var client *Client
 
@@ -58,9 +54,8 @@ func TestClientPact_GetUser(t *testing.T) {
 			Given("User sally exists").
 			UponReceiving("A request to login with user 'sally'").
 			WithRequest(request{
-				Method:  "GET",
-				Path:    term("/user/10", "/user/[0-9]+"),
-				Headers: headersWithToken,
+				Method: "GET",
+				Path:   term("/user/10", "/user/[0-9]+"),
 			}).
 			WillRespondWith(dsl.Response{
 				Status:  200,
@@ -69,7 +64,7 @@ func TestClientPact_GetUser(t *testing.T) {
 			})
 
 		err := pact.Verify(func() error {
-			user, err := client.WithToken("2019-01-01").GetUser(id)
+			user, err := client.GetUser(id)
 
 			// Assert basic fact
 			if user.ID != id {
@@ -90,9 +85,8 @@ func TestClientPact_GetUser(t *testing.T) {
 			Given("User sally does not exist").
 			UponReceiving("A request to login with user 'sally'").
 			WithRequest(request{
-				Method:  "GET",
-				Path:    term("/user/10", "/user/[0-9]+"),
-				Headers: headersWithToken,
+				Method: "GET",
+				Path:   term("/user/10", "/user/[0-9]+"),
 			}).
 			WillRespondWith(dsl.Response{
 				Status:  404,
@@ -100,35 +94,12 @@ func TestClientPact_GetUser(t *testing.T) {
 			})
 
 		err := pact.Verify(func() error {
-			_, err := client.WithToken("2019-01-01").GetUser(10)
+			_, err := client.GetUser(10)
 
 			return err
 		})
 
 		assert.Equal(t, ErrNotFound, err)
-	})
-
-	t.Run("not authenticated", func(t *testing.T) {
-		pact.
-			AddInteraction().
-			Given("User is not authenticated").
-			UponReceiving("A request to login with user 'sally'").
-			WithRequest(request{
-				Method: "GET",
-				Path:   term("/user/10", "/user/[0-9]+"),
-			}).
-			WillRespondWith(dsl.Response{
-				Status:  401,
-				Headers: commonHeaders,
-			})
-
-		err := pact.Verify(func() error {
-			_, err := client.WithToken("").GetUser(10)
-
-			return err
-		})
-
-		assert.Equal(t, ErrUnauthorized, err)
 	})
 }
 

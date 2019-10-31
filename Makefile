@@ -19,7 +19,7 @@ unit:
 consumer: export PACT_TEST := true
 consumer:
 	@echo "--- 🔨Running Consumer Pact tests "
-	go test github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
+	go test -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
 
 provider: export PACT_TEST := true
 provider:
