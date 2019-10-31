@@ -17,8 +17,9 @@ This workshop should take from 1 to 2 hours, depending on how deep you want to g
 - [step 6: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step6): Write a pact test for `404` (missing User) in consumer
 - [step 7: **provider states**](//github.com/pact-foundation/pact-workshop-go/tree/step7): Update API to handle `404` case
 - [step 8: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step8): Write a pact test for the `401` case
-- [step 9: **request filters**](//github.com/pact-foundation/pact-workshop-go/tree/step9): Fix the provider to support the `401` case
-- [step 10: **pact broker**](//github.com/pact-foundation/pact-workshop-go/tree/step10): Implement a broker workflow for integration with CI/CD
+- [step 9: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step9): Update API to handle `401` case
+- [step 10: **request filters**](//github.com/pact-foundation/pact-workshop-go/tree/step10): Fix the provider to support the `401` case
+- [step 11: **pact broker**](//github.com/pact-foundation/pact-workshop-go/tree/step11): Implement a broker workflow for integration with CI/CD
 
 _NOTE: Each step is tied to, and must be run within, a git branch, allowing you to progress through each stage incrementally. For example, to move to step 2 run the following: `git checkout step2`_
 
@@ -386,7 +387,7 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
     user_service_test.go:43: error verifying provider: exit status 1
 ```
 
-## Step 8 - Implement authorisation on the provider
+## Step 9 - Implement authorisation on the provider
 
 Like most tokens, our bearer token is going to be dependent on the date/time it was generated. For the purposes of our API, it's rather crude:
 
@@ -445,7 +446,7 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 Oh, dear. _Both_ tests are now failing. Can you understand why?
 
 
-## Step 9 - Request Filters on the Provider
+## Step 10 - Request Filters on the Provider
 
 Because our pact file has static data in it, our bearer token is now out of date, so when Pact verification passes it to the Provider we get a `401`. There are multiple ways to resolve this - mocking or stubbing out the authentication component is a common one. In our use case, we are going to use a process referred to as _Request Filtering_, using a `RequestFilter`. 
 
@@ -484,7 +485,7 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 ```
 
-## Step 10 - Using a Pact Broker
+## Step 11 - Using a Pact Broker
 
 ![Broker collaboration Workflow](diagrams/workshop_step10-broker.png)
 
