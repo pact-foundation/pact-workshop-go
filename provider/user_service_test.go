@@ -12,8 +12,6 @@ import (
 	"github.com/pact-foundation/pact-go/dsl"
 	"github.com/pact-foundation/pact-go/types"
 	"github.com/pact-foundation/pact-go/utils"
-	"github.com/pact-foundation/pact-workshop-go/model"
-	"github.com/pact-foundation/pact-workshop-go/provider/repository"
 )
 
 // The Provider verification
@@ -29,28 +27,12 @@ func TestPactProvider(t *testing.T) {
 		FailIfNoPactsFound: false,
 		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
 		ProviderVersion:    "1.0.0",
-		StateHandlers:      stateHandlers,
 	})
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-}
-
-var stateHandlers = types.StateHandlers{
-	"User sally exists": func() error {
-		userRepository = sallyExists
-		return nil
-	},
-	"User sally does not exist": func() error {
-		userRepository = sallyDoesNotExist
-		return nil
-	},
-	"User is not authenticated": func() error {
-		userRepository = sallyExists
-		return nil
-	},
 }
 
 // Starts the provider API with hooks for provider states.
@@ -74,33 +56,6 @@ var dir, _ = os.Getwd()
 var pactDir = fmt.Sprintf("%s/../../pacts", dir)
 var logDir = fmt.Sprintf("%s/log", dir)
 var port, _ = utils.GetFreePort()
-
-// Provider States data sets
-var sallyExists = &repository.UserRepository{
-	Users: map[string]*model.User{
-		"sally": &model.User{
-			FirstName: "Jean-Marie",
-			LastName:  "de La Beaujardière😀😍",
-			Username:  "sally",
-			Type:      "admin",
-			ID:        10,
-		},
-	},
-}
-
-var sallyDoesNotExist = &repository.UserRepository{}
-
-var sallyUnauthorized = &repository.UserRepository{
-	Users: map[string]*model.User{
-		"sally": &model.User{
-			FirstName: "Jean-Marie",
-			LastName:  "de La Beaujardière😀😍",
-			Username:  "sally",
-			Type:      "blocked",
-			ID:        10,
-		},
-	},
-}
 
 // Setup the Pact client.
 func createPact() dsl.Pact {
