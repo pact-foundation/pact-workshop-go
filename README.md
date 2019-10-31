@@ -48,6 +48,8 @@ Great! We've created a client (see the `consumer/client` package).
 
 We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
 
+*Move on to [step 2](//github.com/pact-foundation/pact-workshop-go/tree/step2): Write a unit test for our consumer*
+
 ## Step 2 - Client Tested but integration fails
 
 Now lets create a basic test for our API client. We're going to check 2 things:
@@ -123,6 +125,8 @@ Doh! The Provider doesn't know about `/users/:id`. On closer inspection, the pro
 
 We need to have a conversation about what the endpoint should be, but first...
 
+*Move on to [step 3](//github.com/pact-foundation/pact-workshop-go/tree/step3)*
+
 ## Step 3 - Pact to the rescue
 
 Let us add Pact to the project and write a consumer pact test for the `GET /users/:id` endpoint. Note how similar it looks to our unit test:
@@ -179,6 +183,7 @@ $ make consumer
 
 A pact file should have been generated in *pacts/goadminservice-gouserservice.json*
 
+*Move on to [step 4](//github.com/pact-foundation/pact-workshop-go/tree/step4)*
 
 ## Step 4 - Verify the provider
 
@@ -231,6 +236,8 @@ The test has failed, as the expected path `/users/:id` is actually triggering th
 
 The correct endpoint should be `/user/:id`.
 
+Move on to [step 5](//github.com/pact-foundation/pact-workshop-go/tree/step5)*
+
 ## Step 5 - Back to the client we go
 
 ![Pact Verification](diagrams/workshop_step5_pact.png)
@@ -254,6 +261,8 @@ ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 ```
 
 Yay - green ✅!
+
+Move on to [step 6](//github.com/pact-foundation/pact-workshop-go/tree/step6)*
 
 ## Step 6 - Missing Users
 
@@ -318,6 +327,8 @@ We expected this failure, because the user we are requesing does in fact exist! 
 
 We could resolve this by updating our consumer test to use a known non-existent User, but it's worth understanding how Provider states work more generally.
 
+*Move on to [step 7](//github.com/pact-foundation/pact-workshop-go/tree/step7)*
+
 ## Step 7 - Update our API to handle missing users
 
 Our code already deals with missing users and sends a `404` response, however our test data fixture always has Sally (user `10`) in our database.
@@ -350,6 +361,8 @@ $ make provider
 go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
 ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 ```
+
+*Move on to [step 8](//github.com/pact-foundation/pact-workshop-go/tree/step8)*
 
 ## Step 8 - Authorization
 
@@ -386,6 +399,9 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 
     user_service_test.go:43: error verifying provider: exit status 1
 ```
+
+
+*Move on to [step 9](//github.com/pact-foundation/pact-workshop-go/tree/step9)*
 
 ## Step 9 - Implement authorisation on the provider
 
@@ -445,6 +461,7 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 
 Oh, dear. _Both_ tests are now failing. Can you understand why?
 
+*Move on to [step 10](//github.com/pact-foundation/pact-workshop-go/tree/step10)*
 
 ## Step 10 - Request Filters on the Provider
 
@@ -484,6 +501,8 @@ $ make provider
 go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
 ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 ```
+
+*Move on to [step 11](//github.com/pact-foundation/pact-workshop-go/tree/step11)*
 
 ## Step 11 - Using a Pact Broker
 
