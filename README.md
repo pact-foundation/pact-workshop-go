@@ -47,3 +47,5 @@ This User Service expects a `user` path parameter, and then returns some simple 
 Great! We've created a client (see the `consumer/client` package).
 
 We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
+
+*Move on to [step 2](//github.com/pact-foundation/pact-workshop-go/tree/step2)*
