@@ -48,6 +48,8 @@ Great! We've created a client (see the `consumer/client` package).
 
 We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
 
+*Move on to [step 2](//github.com/pact-foundation/pact-workshop-go/tree/step2): Write a unit test for our consumer*
+
 ## Step 2 - Client Tested but integration fails
 
 Now lets create a basic test for our API client. We're going to check 2 things:
@@ -122,3 +124,5 @@ make: *** [run-consumer] Error 1
 Doh! The Provider doesn't know about `/users/:id`. On closer inspection, the provider only knows about `/user/:id` and `/users`.
 
 We need to have a conversation about what the endpoint should be, but first...
+
+*Move on to [step 3](//github.com/pact-foundation/pact-workshop-go/tree/step3)*
