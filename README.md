@@ -17,8 +17,9 @@ This workshop should take from 1 to 2 hours, depending on how deep you want to g
 - [step 6: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step6): Write a pact test for `404` (missing User) in consumer
 - [step 7: **provider states**](//github.com/pact-foundation/pact-workshop-go/tree/step7): Update API to handle `404` case
 - [step 8: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step8): Write a pact test for the `401` case
-- [step 9: **request filters**](//github.com/pact-foundation/pact-workshop-go/tree/step9): Fix the provider to support the `401` case
-- [step 10: **pact broker**](//github.com/pact-foundation/pact-workshop-go/tree/step10): Implement a broker workflow for integration with CI/CD
+- [step 9: **pact test**](//github.com/pact-foundation/pact-workshop-go/tree/step9): Update API to handle `401` case
+- [step 10: **request filters**](//github.com/pact-foundation/pact-workshop-go/tree/step10): Fix the provider to support the `401` case
+- [step 11: **pact broker**](//github.com/pact-foundation/pact-workshop-go/tree/step11): Implement a broker workflow for integration with CI/CD
 
 _NOTE: Each step is tied to, and must be run within, a git branch, allowing you to progress through each stage incrementally. For example, to move to step 2 run the following: `git checkout step2`_
 
