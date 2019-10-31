@@ -229,27 +229,3 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 The test has failed, as the expected path `/users/:id` is actually triggering the `/users` endpoint (which we don't need), and returning a _list_ of Users instead of a _single_ User. We incorrectly believed our provider was following a RESTful design, but the authors were too lazy to implement a better routing solution 🤷🏻‍♂️.
 
 The correct endpoint should be `/user/:id`.
-
-## Step 5 - Back to the client we go
-
-![Pact Verification](diagrams/workshop_step5_pact.png)
-
-Let's update the consumer test and client to hit the correct path, and run the provider verification also:
-
-```
-$ make consumer
-
---- 🔨Running Consumer Pact tests
-go test github.com/pact-foundation/pact-workshop-go/consumer/client -run '^TestClientPact'
-ok  	github.com/pact-foundation/pact-workshop-go/consumer/client	21.983s
-```
-
-```
-$ make provider
-
---- 🔨Running Provider Pact tests
-go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
-ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
-```
-
-Yay - green ✅!

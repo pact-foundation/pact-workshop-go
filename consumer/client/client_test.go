@@ -18,7 +18,7 @@ func TestClientUnit_GetUser(t *testing.T) {
 
 	// Setup mock server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		assert.Equal(t, req.URL.String(), fmt.Sprintf("/user/%d", userID))
+		assert.Equal(t, req.URL.String(), fmt.Sprintf("/users/%d", userID))
 		user, _ := json.Marshal(model.User{
 			FirstName: "Sally",
 			LastName:  "McDougall",

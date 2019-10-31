@@ -54,7 +54,7 @@ func TestClientPact_GetUser(t *testing.T) {
 			UponReceiving("A request to login with user 'sally'").
 			WithRequest(request{
 				Method: "GET",
-				Path:   term("/user/10", "/user/[0-9]+"),
+				Path:   term("/users/10", "/users/[0-9]+"),
 			}).
 			WillRespondWith(dsl.Response{
 				Status:  200,
