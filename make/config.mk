@@ -1,4 +1,7 @@
-export PATH := pact/bin:$(PATH)
+SHELL = "/bin/bash"
+
+export PATH := $(PWD)/pact/bin:$(PATH)
+export PATH
 export PROVIDER_NAME = GoUserService
 export CONSUMER_NAME = GoAdminService
 export PACT_DIR = $(PWD)/pacts
