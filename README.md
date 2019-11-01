@@ -148,7 +148,6 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 			WithRequest(request{
 				Method:  "GET",
 				Path:    term("/users/10", "/user/[0-9]+"),
-				Headers: headersWithToken,
 			}).
 			WillRespondWith(dsl.Response{
 				Status:  200,
@@ -157,7 +156,7 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 			})
 
 		err := pact.Verify(func() error {
-			user, err := client.WithToken("2019-01-01").GetUser(id)
+			user, err := client.GetUser(id)
 
 			// Assert basic fact
 			if user.ID != id {
@@ -284,7 +283,6 @@ Let's write a test for this scenario, and then generate an updated pact file.
 			WithRequest(request{
 				Method:  "GET",
 				Path:    term("/user/10", "/user/[0-9]+"),
-				Headers: headersWithToken,
 			}).
 			WillRespondWith(dsl.Response{
 				Status:  404,
@@ -292,7 +290,7 @@ Let's write a test for this scenario, and then generate an updated pact file.
 			})
 
 		err := pact.Verify(func() error {
-			_, err := client.WithToken("2019-01-01").GetUser(10)
+			_, err := client.GetUser(10)
 
 			return err
 		})
