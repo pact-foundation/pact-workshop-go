@@ -37,6 +37,16 @@ There are two components in scope for our workshop.
 
 For the purposes of this workshop, we won't implement any functionality of the Admin Service, except the bits that require User information.
 
+
+The key packages are shown below:
+
+```sh
+├── consumer		  # Contains the Admin Service Team (client) project
+├── model         # Shared domain model
+├── pact          # The directory of the Pact Standalone CLI
+├── provider      # The User Service Team (provider) project
+```
+
 ## Step 1 - Simple Consumer calling Provider
 
 We need to first create an HTTP client to make the calls to our provider service:
