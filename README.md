@@ -1,7 +1,7 @@
 # Pact Go workshop
 
 ## Introduction
-This workshop is aimed at demonstrating core features and benefits of contract testing with Pact. It uses a simple example
+This workshop is aimed at demonstrating core features and benefits of contract testing with Pact.
 
 Whilst contract testing can be applied retrospectively to systems, we will follow the [consumer driven contracts](https://martinfowler.com/articles/consumerDrivenContracts.html) approach in this workshop - where a new consumer and provider are created in parallel to evolve a service over time, especially where there is some uncertainty with what is to be built.
 
@@ -35,6 +35,17 @@ There are two components in scope for our workshop.
 1. User Service (Provider). Provides useful things about a user, such as listing all users and getting the details of individuals.
 
 For the purposes of this workshop, we won't implement any functionality of the Admin Service, except the bits that require User information.
+
+**Project Structure**
+
+The key packages are shown below:
+
+```sh
+├── consumer		  # Contains the Admin Service Team (client) project
+├── model         # Shared domain model
+├── pact          # The directory of the Pact Standalone CLI
+├── provider      # The User Service Team (provider) project
+```
 
 ## Step 1 - Simple Consumer calling Provider
 
@@ -124,7 +135,7 @@ Meanwhile, our provider team has started building out their API in parallel. Let
 
 ```
 # Terminal 1
-$ make run-provider 
+$ make run-provider
 
 2019/10/28 18:24:37 API starting: port 8080 ([::]:8080)
 
@@ -282,7 +293,7 @@ Move on to [step 6](//github.com/pact-foundation/pact-workshop-go/tree/step6)*
 
 ## Step 6 - Missing Users
 
-We're now going to add another scenario - what happens when we make a call for a user that doesn't exist? We assume we'll get a `404`, because that is the obvious thing to do. 
+We're now going to add another scenario - what happens when we make a call for a user that doesn't exist? We assume we'll get a `404`, because that is the obvious thing to do.
 
 Let's write a test for this scenario, and then generate an updated pact file.
 
@@ -382,7 +393,7 @@ ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 
 ## Step 8 - Authorization
 
-It turns out that not everyone should be able to use the API. After a discussion with the team, it was decided that a time-bound bearer token would suffice. 
+It turns out that not everyone should be able to use the API. After a discussion with the team, it was decided that a time-bound bearer token would suffice.
 
 In the case a valid bearer token is not provided, we expect a `401`. Let's update the consumer test cases to pass the bearer token, and capture this new `401` scenario.
 
@@ -481,7 +492,7 @@ Oh, dear. _Both_ tests are now failing. Can you understand why?
 
 ## Step 10 - Request Filters on the Provider
 
-Because our pact file has static data in it, our bearer token is now out of date, so when Pact verification passes it to the Provider we get a `401`. There are multiple ways to resolve this - mocking or stubbing out the authentication component is a common one. In our use case, we are going to use a process referred to as _Request Filtering_, using a `RequestFilter`. 
+Because our pact file has static data in it, our bearer token is now out of date, so when Pact verification passes it to the Provider we get a `401`. There are multiple ways to resolve this - mocking or stubbing out the authentication component is a common one. In our use case, we are going to use a process referred to as _Request Filtering_, using a `RequestFilter`.
 
 _NOTE_: This is an advanced concept and should be used carefully, as it has the potential to invalidate a contract by bypassing its constraints. See https://github.com/pact-foundation/pact-go#request-filtering for more details on this.
 
