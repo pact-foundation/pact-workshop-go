@@ -112,7 +112,7 @@ Meanwhile, our provider team has started building out their API in parallel. Let
 
 ```
 # Terminal 1
-$ make run-provider 
+$ make run-provider
 
 2019/10/28 18:24:37 API starting: port 8080 ([::]:8080)
 
@@ -148,7 +148,6 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 			WithRequest(request{
 				Method:  "GET",
 				Path:    term("/users/10", "/user/[0-9]+"),
-				Headers: headersWithToken,
 			}).
 			WillRespondWith(dsl.Response{
 				Status:  200,
@@ -157,7 +156,7 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 			})
 
 		err := pact.Verify(func() error {
-			user, err := client.WithToken("2019-01-01").GetUser(id)
+			user, err := client.GetUser(id)
 
 			// Assert basic fact
 			if user.ID != id {
