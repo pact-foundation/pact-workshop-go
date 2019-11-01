@@ -1,6 +1,7 @@
 # Pact Go workshop
 
 ## Introduction
+
 This workshop is aimed at demonstrating core features and benefits of contract testing with Pact. It uses a simple example
 
 Whilst contract testing can be applied retrospectively to systems, we will follow the [consumer driven contracts](https://martinfowler.com/articles/consumerDrivenContracts.html) approach in this workshop - where a new consumer and provider are created in parallel to evolve a service over time, especially where there is some uncertainty with what is to be built.
@@ -42,17 +43,29 @@ We need to first create an HTTP client to make the calls to our provider service
 
 ![Simple Consumer](diagrams/workshop_step1.png)
 
-*NOTE*: even if the API client had been been graciously provided for us by our Provider Team, it doesn't mean that we shouldn't write contract tests - because the version of the client we have may not always be in sync with the deployed API - and also because we will write tests on the output appropriate to our specific needs.
+_NOTE_: even if the API client had been been graciously provided for us by our Provider Team, it doesn't mean that we shouldn't write contract tests - because the version of the client we have may not always be in sync with the deployed API - and also because we will write tests on the output appropriate to our specific needs.
 
 This User Service expects a `user` path parameter, and then returns some simple json back:
 
 ![Sequence Diagram](diagrams/workshop_step1_class-sequence-diagram.png)
 
-Great! We've created a client (see the `consumer/client` package).
+You can see the client public interface we created in the `consumer/client` package:
+
+```go
+
+type Client struct {
+	BaseURL    *url.URL
+	httpClient *http.Client
+}
+
+// GetUser gets a single user from the API
+func (c *Client) GetUser(id int) (*model.User, error) {
+}
+```
 
 We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
 
-*Move on to [step 2](//github.com/pact-foundation/pact-workshop-go/tree/step2): Write a unit test for our consumer*
+_Move on to [step 2](//github.com/pact-foundation/pact-workshop-go/tree/step2): Write a unit test for our consumer_
 
 ## Step 2 - Client Tested but integration fails
 
@@ -61,7 +74,7 @@ Now lets create a basic test for our API client. We're going to check 2 things:
 1. That our client code hit the expected endpoint
 1. That the response is marshalled into a `User` object, with the correct ID
 
-*consumer/client/client_test.go*
+_consumer/client/client_test.go_
 
 ```go
 func TestClientUnit_GetUser(t *testing.T) {
@@ -109,7 +122,6 @@ ok  	github.com/pact-foundation/pact-workshop-go/consumer/client	10.196s
 
 Meanwhile, our provider team has started building out their API in parallel. Let's run our client against our provider (you'll need two terminals to do this):
 
-
 ```
 # Terminal 1
 $ make run-provider
@@ -129,4 +141,4 @@ Doh! The Provider doesn't know about `/users/:id`. On closer inspection, the pro
 
 We need to have a conversation about what the endpoint should be, but first...
 
-*Move on to [step 3](//github.com/pact-foundation/pact-workshop-go/tree/step3)*
+_Move on to [step 3](//github.com/pact-foundation/pact-workshop-go/tree/step3)_
