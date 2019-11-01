@@ -112,7 +112,7 @@ Meanwhile, our provider team has started building out their API in parallel. Let
 
 ```
 # Terminal 1
-$ make run-provider 
+$ make run-provider
 
 2019/10/28 18:24:37 API starting: port 8080 ([::]:8080)
 
