@@ -16,7 +16,7 @@ func main() {
 		BaseURL: u,
 	}
 
-	users, err := client.WithToken(token).GetUser(10)
+	users, err := client.GetUser(10)
 	if err != nil {
 		log.Fatal(err)
 	}
