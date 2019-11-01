@@ -48,7 +48,19 @@ This User Service expects a `user` path parameter, and then returns some simple 
 
 ![Sequence Diagram](diagrams/workshop_step1_class-sequence-diagram.png)
 
-Great! We've created a client (see the `consumer/client` package).
+You can see the client public interface we created in the `consumer/client` package:
+
+```go
+
+type Client struct {
+	BaseURL    *url.URL
+	httpClient *http.Client
+}
+
+// GetUser gets a single user from the API
+func (c *Client) GetUser(id int) (*model.User, error) {
+}
+```
 
 We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
 
