@@ -30,6 +30,10 @@ func TestPactProvider(t *testing.T) {
 		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
 		ProviderVersion:    "1.0.0",
 		StateHandlers:      stateHandlers,
+		BeforeEach: func() error {
+			userRepository = sallyExists
+			return nil
+		},
 	})
 
 	if err != nil {
@@ -45,10 +49,6 @@ var stateHandlers = types.StateHandlers{
 	},
 	"User sally does not exist": func() error {
 		userRepository = sallyDoesNotExist
-		return nil
-	},
-	"User is not authenticated": func() error {
-		userRepository = sallyExists
 		return nil
 	},
 }
