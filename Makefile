@@ -1,5 +1,3 @@
-TEST?=./...
-
 include ./make/config.mk
 
 install:
