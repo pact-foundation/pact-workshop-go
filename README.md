@@ -426,12 +426,8 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
     user_service_test.go:43: error verifying provider: exit status 1
 ```
 
-<<<<<<< HEAD
-=======
-
 *Move on to [step 9](//github.com/pact-foundation/pact-workshop-go/tree/step9)*
 
->>>>>>> step11
 ## Step 9 - Implement authorisation on the provider
 
 Like most tokens, our bearer token is going to be dependent on the date/time it was generated. For the purposes of our API, it's rather crude:
