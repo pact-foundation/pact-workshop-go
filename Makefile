@@ -14,12 +14,12 @@ run-provider:
 
 unit:
 	@echo "--- 🔨Running Unit tests "
-	go test github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
+	go test -tags=unit -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
 
 consumer: export PACT_TEST := true
 consumer: install
 	@echo "--- 🔨Running Consumer Pact tests "
-	go test -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
+	go test -tags=integration -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
 
 provider: export PACT_TEST := true
 provider: install
