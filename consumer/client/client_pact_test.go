@@ -1,3 +1,5 @@
+// +build integration
+
 package client
 
 import (
@@ -22,25 +24,19 @@ var client *Client
 func TestMain(m *testing.M) {
 	var exitCode int
 
-	if os.Getenv("PACT_TEST") != "" {
+	// Setup Pact and related test stuff
+	setup()
 
-		fmt.Println("PACT_TEST not null")
-		// Setup Pact and related test stuff
-		setup()
+	// Run all the tests
+	exitCode = m.Run()
 
-		// Run all the tests
-		exitCode = m.Run()
-
-		// Shutdown the Mock Service and Write pact files to disk
-		if err := pact.WritePact(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		pact.Teardown()
-	} else {
-		exitCode = m.Run()
+	// Shutdown the Mock Service and Write pact files to disk
+	if err := pact.WritePact(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
+
+	pact.Teardown()
 	os.Exit(exitCode)
 }
 
