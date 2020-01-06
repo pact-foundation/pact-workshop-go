@@ -539,6 +539,17 @@ We've been publishing our pacts from the consumer project by essentially sharing
 
 Using a broker simplies the management of pacts and adds a number of useful features, including some safety enhancements for continuous delivery which we'll see shortly.
 
+In this workshop we will be using the open source Pact broker.
+
+### Running the Pact Broker with docker-compose
+
+In the root directory, run:
+
+```console
+docker-compose up
+```
+
+
 ### Publish from consumer
 
 First, in the consumer project we need to tell Pact about our broker. We've created a small utility to push the pact files to the broker:
