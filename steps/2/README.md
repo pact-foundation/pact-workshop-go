@@ -74,4 +74,4 @@ Doh! The Provider doesn't know about `/users/:id`. On closer inspection, the pro
 
 We need to have a conversation about what the endpoint should be, but first...
 
-_Move on to [step 3](github.com/pact-foundation/pact-workshop-go/tree/master/steps/3)_
+_Move on to [step 3](../3)_

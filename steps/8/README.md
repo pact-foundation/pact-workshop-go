@@ -36,4 +36,4 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
     user_service_test.go:43: error verifying provider: exit status 1
 ```
 
-*Move on to [step 9](github.com/pact-foundation/pact-workshop-go/tree/master/steps/9)*
+*Move on to [step 9](../9)*

@@ -62,4 +62,4 @@ We expected this failure, because the user we are requesing does in fact exist! 
 
 We could resolve this by updating our consumer test to use a known non-existent User, but it's worth understanding how Provider states work more generally.
 
-*Move on to [step 7](github.com/pact-foundation/pact-workshop-go/tree/master/steps/7)*
+*Move on to [step 7](../7)*

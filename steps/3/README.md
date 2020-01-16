@@ -53,4 +53,4 @@ $ make consumer
 
 A pact file should have been generated in _pacts/goadminservice-gouserservice.json_
 
-_Move on to [step 4](github.com/pact-foundation/pact-workshop-go/tree/master/steps/4)_
+_Move on to [step 4](../4)_

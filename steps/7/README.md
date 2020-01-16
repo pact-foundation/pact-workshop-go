@@ -33,4 +33,4 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 ```
 
-*Move on to [step 8](github.com/pact-foundation/pact-workshop-go/tree/master/steps/8)*
+*Move on to [step 8](../8)*

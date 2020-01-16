@@ -24,4 +24,4 @@ ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
 
 Yay - green ✅!
 
-*Move on to [step 6](github.com/pact-foundation/pact-workshop-go/tree/master/steps/6)*
+*Move on to [step 6](../6)*

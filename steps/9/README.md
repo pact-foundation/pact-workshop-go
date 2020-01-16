@@ -58,4 +58,4 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 
 Oh, dear. _Both_ tests are now failing. Can you understand why?
 
-*Move on to [step 10](github.com/pact-foundation/pact-workshop-go/tree/master/steps/10)*
+*Move on to [step 10](../10)*

@@ -9,19 +9,19 @@ This workshop should take from 1 to 2 hours, depending on how deep you want to g
 
 **Workshop outline**:
 
-- [step 1: **create consumer**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/1): Create our consumer before the Provider API even exists
-- [step 2: **unit test**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/2): Write a unit test for our consumer
-- [step 3: **pact test**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/3): Write a Pact test for our consumer
-- [step 4: **pact verification**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/4): Verify the consumer pact with the Provider API
-- [step 5: **fix consumer**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/5): Fix the consumer's bad assumptions about the Provider
-- [step 6: **pact test**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/6): Write a pact test for `404` (missing User) in consumer
-- [step 7: **provider states**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/7): Update API to handle `404` case
-- [step 8: **pact test**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/8): Write a pact test for the `401` case
-- [step 9: **pact test**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/9): Update API to handle `401` case
-- [step 10: **request filters**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/10): Fix the provider to support the `401` case
-- [step 11: **pact broker**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/11): Implement a broker workflow for integration with CI/CD
+- [step 1: **create consumer**](steps/1): Create our consumer before the Provider API even exists
+- [step 2: **unit test**](steps/2): Write a unit test for our consumer
+- [step 3: **pact test**](steps/3): Write a Pact test for our consumer
+- [step 4: **pact verification**](steps/4): Verify the consumer pact with the Provider API
+- [step 5: **fix consumer**](steps/5): Fix the consumer's bad assumptions about the Provider
+- [step 6: **pact test**](steps/6): Write a pact test for `404` (missing User) in consumer
+- [step 7: **provider states**](steps/7): Update API to handle `404` case
+- [step 8: **pact test**](steps/8): Write a pact test for the `401` case
+- [step 9: **pact test**](steps/9): Update API to handle `401` case
+- [step 10: **request filters**](steps/10): Fix the provider to support the `401` case
+- [step 11: **pact broker**](steps/11): Implement a broker workflow for integration with CI/CD
 
-**All the steps are found in the [steps](github.com/pact-foundation/pact-workshop-go/tree/master/steps/) sub-folder, feel free to skip around as needed!**
+**All the steps are found in the [steps](steps/) sub-folder, feel free to skip around as needed!**
 
 ## Learning objectives
 
@@ -47,4 +47,4 @@ The key packages are shown below:
 ├── provider      # The User Service Team (provider) project
 ```
 
-*Start with [step 1: **create consumer**](github.com/pact-foundation/pact-workshop-go/tree/master/steps/1): Create our consumer before the Provider API even exists*
+*Start with [step 1: **create consumer**](steps/1): Create our consumer before the Provider API even exists*

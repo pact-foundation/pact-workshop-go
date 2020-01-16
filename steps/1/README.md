@@ -28,4 +28,4 @@ func (c *Client) GetUser(id int) (*model.User, error) {
 
 We can run the client with `make run-consumer` - it should fail with an error, because the Provider is not running.
 
-_Move on to [step 2](github.com/pact-foundation/pact-workshop-go/tree/master/steps/2)_
+_Move on to [step 2](../2)_

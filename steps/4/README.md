@@ -49,4 +49,4 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 
 The test has failed, as the expected path `/users/:id` is actually triggering the `/users` endpoint (which we don't need), and returning a _list_ of Users instead of a _single_ User. We incorrectly believed our provider was following a RESTful design, but the authors were too lazy to implement a better routing solution 🤷🏻‍♂️.
 
-*Move on to [step 5](github.com/pact-foundation/pact-workshop-go/tree/master/steps/5)*
+*Move on to [step 5](../5)*
