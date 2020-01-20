@@ -2,7 +2,7 @@
 
 ## Step 11 - Using a Pact Broker
 
-![Broker collaboration Workflow](diagrams/workshop_step10-broker.png)
+![Broker collaboration Workflow](diagrams/workshop_step11-broker.png)
 
 We've been publishing our pacts from the consumer project by essentially sharing the file system with the provider. But this is not very manageable when you have multiple teams contributing to the code base, and pushing to CI. We can use a [Pact Broker](https://pactflow.io) to do this instead.
 
