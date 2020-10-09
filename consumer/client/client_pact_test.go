@@ -123,11 +123,10 @@ func setup() {
 
 func createPact() dsl.Pact {
 	return dsl.Pact{
-		Consumer:                 os.Getenv("CONSUMER_NAME"),
-		Provider:                 os.Getenv("PROVIDER_NAME"),
-		LogDir:                   os.Getenv("LOG_DIR"),
-		PactDir:                  os.Getenv("PACT_DIR"),
-		LogLevel:                 "INFO",
-		DisableToolValidityCheck: true,
+		Consumer: os.Getenv("CONSUMER_NAME"),
+		Provider: os.Getenv("PROVIDER_NAME"),
+		LogDir:   os.Getenv("LOG_DIR"),
+		PactDir:  os.Getenv("PACT_DIR"),
+		LogLevel: "INFO",
 	}
 }
