@@ -23,9 +23,8 @@ func TestPactProvider(t *testing.T) {
 
 	// Verify the Provider - Tag-based Published Pacts for any known consumers
 	_, err := pact.VerifyProvider(t, types.VerifyRequest{
-		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
-		Tags:               []string{"master"},
-		FailIfNoPactsFound: false,
+		ProviderBaseURL: fmt.Sprintf("http://127.0.0.1:%d", port),
+		Tags:            []string{"master"},
 		// Use this if you want to test without the Pact Broker
 		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
 		BrokerURL:                  fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
@@ -35,12 +34,15 @@ func TestPactProvider(t *testing.T) {
 		ProviderVersion:            "1.0.0",
 		StateHandlers:              stateHandlers,
 		RequestFilter:              fixBearerToken,
+		BeforeEach: func() error {
+			userRepository = sallyExists
+			return nil
+		},
 	})
 
 	if err != nil {
-		t.Fatal(err)
+		t.Log(err)
 	}
-
 }
 
 // Simulates the neeed to set a time-bound authorization token,
@@ -118,10 +120,8 @@ var sallyUnauthorized = &repository.UserRepository{
 // Setup the Pact client.
 func createPact() dsl.Pact {
 	return dsl.Pact{
-		Provider:                 "GoUserService",
-		LogDir:                   logDir,
-		PactDir:                  pactDir,
-		DisableToolValidityCheck: true,
-		LogLevel:                 "INFO",
+		Provider: "GoUserService",
+		LogDir:   logDir,
+		LogLevel: "INFO",
 	}
 }
