@@ -22,17 +22,15 @@ func TestPactProvider(t *testing.T) {
 
 	// Verify the Provider - Tag-based Published Pacts for any known consumers
 	_, err := pact.VerifyProvider(t, types.VerifyRequest{
-		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
-		Tags:               []string{"master"},
-		FailIfNoPactsFound: false,
-		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
-		ProviderVersion:    "1.0.0",
+		ProviderBaseURL: fmt.Sprintf("http://127.0.0.1:%d", port),
+		Tags:            []string{"master"},
+		PactURLs:        []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
+		ProviderVersion: "1.0.0",
 	})
 
 	if err != nil {
-		t.Log("Pact test failed")
+		t.Log(err)
 	}
-
 }
 
 // Starts the provider API with hooks for provider states.
@@ -60,10 +58,8 @@ var port, _ = utils.GetFreePort()
 // Setup the Pact client.
 func createPact() dsl.Pact {
 	return dsl.Pact{
-		Provider:                 "GoUserService",
-		LogDir:                   logDir,
-		PactDir:                  pactDir,
-		DisableToolValidityCheck: true,
-		LogLevel:                 "INFO",
+		Provider: "GoUserService",
+		LogDir:   logDir,
+		LogLevel: "INFO",
 	}
 }
