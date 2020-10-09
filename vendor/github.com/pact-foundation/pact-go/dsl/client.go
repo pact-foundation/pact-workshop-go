@@ -1,6 +1,7 @@
 package dsl
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pact-foundation/pact-go/client"
@@ -32,7 +34,7 @@ type Client interface {
 	RemoveAllServers(server *types.MockServer) []*types.MockServer
 
 	// VerifyProvider runs the verification process against a running Provider.
-	VerifyProvider(request types.VerifyRequest) (types.ProviderVerifierResponse, error)
+	VerifyProvider(request types.VerifyRequest) ([]types.ProviderVerifierResponse, error)
 
 	// UpdateMessagePact adds a pact message to a contract file
 	UpdateMessagePact(request types.PactMessageRequest) error
@@ -143,9 +145,9 @@ func (p *PactClient) RemoveAllServers(server *types.MockServer) []*types.MockSer
 
 // VerifyProvider runs the verification process against a running Provider.
 // TODO: extract/refactor the stdout/error streaems from these functions
-func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.ProviderVerifierResponse, error) {
+func (p *PactClient) VerifyProvider(request types.VerifyRequest) ([]types.ProviderVerifierResponse, error) {
 	log.Println("[DEBUG] client: verifying a provider")
-	var response types.ProviderVerifierResponse
+	response := make([]types.ProviderVerifierResponse, 0)
 
 	// Convert request into flags, and validate request
 	err := request.Validate()
@@ -156,8 +158,12 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 	address := getAddress(request.ProviderBaseURL)
 	port := getPort(request.ProviderBaseURL)
 
-	waitForPort(port, p.getNetworkInterface(), address, p.TimeoutDuration,
+	err = waitForPort(port, p.getNetworkInterface(), address, p.TimeoutDuration,
 		fmt.Sprintf(`Timed out waiting for Provider API to start on port %d - are you sure it's running?`, port))
+
+	if err != nil {
+		return response, err
+	}
 
 	// Run command, splitting out stderr and stdout. The command can fail for
 	// several reasons:
@@ -179,24 +185,46 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 	if err != nil {
 		return response, err
 	}
+
+	// Buffered channel: wait for all reading to complete
+	var wg sync.WaitGroup
+	verifications := []string{}
+	var stdErr strings.Builder
+
+	// Split by lines, as the content is JSONL formatted
+	// Each pact is verified by line, and the results (as JSON) sent to stdout.
+	// See https://github.com/pact-foundation/pact-go/issues/88#issuecomment-404686337
+	stdOutScanner := bufio.NewScanner(stdOutPipe)
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		stdOutBuf := make([]byte, bufio.MaxScanTokenSize)
+		stdOutScanner.Buffer(stdOutBuf, 64*1024*1024)
+
+		for stdOutScanner.Scan() {
+			verifications = append(verifications, stdOutScanner.Text())
+		}
+	}()
+
+	// Scrape errors
+	stdErrScanner := bufio.NewScanner(stdErrPipe)
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		for stdErrScanner.Scan() {
+			stdErr.WriteString(fmt.Sprintf("%s\n", stdErrScanner.Text()))
+		}
+
+	}()
+
 	err = cmd.Start()
 	if err != nil {
 		return response, err
 	}
-	stdOut, err := ioutil.ReadAll(stdOutPipe)
-	if err != nil {
-		return response, err
-	}
-	stdErr, err := ioutil.ReadAll(stdErrPipe)
-	if err != nil {
-		return response, err
-	}
 
+	// Wait for watch goroutine before Cmd.Wait(), race condition!
 	err = cmd.Wait()
-
-	// Split by lines, as the content is now JSONL
-	// See https://github.com/pact-foundation/pact-go/issues/88#issuecomment-404686337
-	verifications := strings.Split(string(stdOut), "\n")
+	wg.Wait()
 
 	var verification types.ProviderVerifierResponse
 	for _, v := range verifications {
@@ -209,7 +237,7 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 		if v != "" && strings.Index(v, "INFO") != 0 {
 			dErr := json.Unmarshal([]byte(v), &verification)
 
-			response.Examples = append(response.Examples, verification.Examples...)
+			response = append(response, verification)
 
 			if dErr != nil {
 				err = dErr
@@ -221,7 +249,7 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 		return response, err
 	}
 
-	return response, fmt.Errorf("error verifying provider: %s\n\nSTDERR:\n%s\n\nSTDOUT:\n%s", err, stdErr, stdOut)
+	return response, fmt.Errorf("error verifying provider: %s\n\nSTDERR:\n%s\n\nSTDOUT:\n%s", err, stdErr.String(), strings.Join(verifications, "\n"))
 }
 
 // UpdateMessagePact adds a pact message to a contract file
@@ -379,7 +407,7 @@ func getAddress(rawURL string) string {
 // Use this to wait for a port to be running prior
 // to running tests.
 var waitForPort = func(port int, network string, address string, timeoutDuration time.Duration, message string) error {
-	log.Println("[DEBUG] waiting for port", port, "to become available")
+	log.Println("[DEBUG] waiting for port", port, "to become available on", address, "after", timeoutDuration)
 	timeout := time.After(timeoutDuration)
 
 	for {
