@@ -23,6 +23,9 @@ const (
 
 var timeExample = time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC)
 
+var fullRegex = regexp.MustCompile(`regex=(.*)$`)
+var exampleRegex = regexp.MustCompile(`^example=(.*)`)
+
 type eachLike struct {
 	Contents interface{} `json:"contents"`
 	Min      int         `json:"min"`
@@ -127,7 +130,7 @@ func Term(generate string, matcher string) Matcher {
 	}
 }
 
-// HexValue defines a matcher that accepts hexidecimal values.
+// HexValue defines a matcher that accepts hexadecimal values.
 func HexValue() Matcher {
 	return Regex("3F", hexadecimal)
 }
@@ -299,7 +302,11 @@ func match(srcType reflect.Type, params params) Matcher {
 
 		for i := 0; i < srcType.NumField(); i++ {
 			field := srcType.Field(i)
-			result[field.Tag.Get("json")] = match(field.Type, pluckParams(field.Type, field.Tag.Get("pact")))
+			fieldName := getJsonFieldName(field)
+			if fieldName == "" {
+				continue
+			}
+			result[fieldName] = match(field.Type, pluckParams(field.Type, field.Tag.Get("pact")))
 		}
 		return result
 	case reflect.String:
@@ -330,6 +337,24 @@ func match(srcType reflect.Type, params params) Matcher {
 	default:
 		panic(fmt.Sprintf("match: unhandled type: %v", srcType))
 	}
+}
+
+// getJsonFieldName retrieves the name for a JSON field as
+// https://golang.org/pkg/encoding/json/#Marshal would do.
+func getJsonFieldName(field reflect.StructField) string {
+	jsonTag := field.Tag.Get("json")
+	if jsonTag == "" {
+		return field.Name
+	}
+	// Field should be ignored according to the JSON marshal documentation.
+	if jsonTag == "-" {
+		return ""
+	}
+	commaIndex := strings.Index(jsonTag, ",")
+	if commaIndex > -1 {
+		return jsonTag[:commaIndex]
+	}
+	return jsonTag
 }
 
 // params are plucked from 'pact' struct tags as match() traverses
@@ -399,9 +424,6 @@ func pluckParams(srcType reflect.Type, pactTag string) params {
 			triggerInvalidPactTagPanic(pactTag, err)
 		}
 	case reflect.String:
-		fullRegex, _ := regexp.Compile(`regex=(.*)$`)
-		exampleRegex, _ := regexp.Compile(`^example=(.*)`)
-
 		if fullRegex.Match([]byte(pactTag)) {
 			components := strings.Split(pactTag, ",regex=")
 
