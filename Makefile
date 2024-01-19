@@ -31,6 +31,15 @@ deploy-provider: install
 		--broker-password $(PACT_BROKER_PASSWORD) \
 		--version ${VERSION_COMMIT} \
 		--to-environment production
+record-deploy-consumer: install
+	@echo "--- ✅ Recording deployment of consumer"
+	pact-broker record-deployment \
+		--pacticipant $(CONSUMER_NAME) \
+		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
+		--broker-username $(PACT_BROKER_USERNAME) \
+		--broker-password $(PACT_BROKER_PASSWORD) \
+		--version ${VERSION_COMMIT} \
+		--environment production
 record-deploy-provider: install
 	@echo "--- ✅ Recording deployment of provider"
 	pact-broker record-deployment \
@@ -39,7 +48,7 @@ record-deploy-provider: install
 		--broker-username $(PACT_BROKER_USERNAME) \
 		--broker-password $(PACT_BROKER_PASSWORD) \
 		--version ${VERSION_COMMIT} \
-		--environment test
+		--environment production
 
 publish:
 	@echo "--- 📝 Publishing Pacts"
@@ -64,4 +73,6 @@ provider: install
 	@echo "--- 🔨Running Provider Pact tests "
 	go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
 
+broker:
+	docker-compose up -d
 .PHONY: install deploy-consumer deploy-provider publish unit consumer provider
