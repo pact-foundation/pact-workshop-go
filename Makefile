@@ -48,18 +48,16 @@ publish:
 	@echo
 	@echo "Pact contract publishing complete!"
 	@echo
-	@echo "Head over to $(PACT_BROKER_PROTO)://$(PACT_BROKER_URL) and login with"
-	@echo "=> Username: $(PACT_BROKER_USERNAME)"
-	@echo "=> Password: $(PACT_BROKER_PASSWORD)"
+	@echo "Head over to $(PACT_BROKER_PROTO)://$(PACT_BROKER_URL) and login with $(PACT_BROKER_USERNAME)/$(PACT_BROKER_PASSWORD)"
 	@echo "to see your published contracts.	"
 unit:
 	@echo "--- 🔨Running Unit tests "
-	go test github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
+	go test -tags=unit -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
 
 consumer: export PACT_TEST := true
 consumer: install
 	@echo "--- 🔨Running Consumer Pact tests "
-	go test -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
+	go test -tags=integration -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
 
 provider: export PACT_TEST := true
 provider: install

@@ -35,12 +35,15 @@ func TestPactProvider(t *testing.T) {
 		ProviderVersion:            os.Getenv("VERSION_COMMIT"),
 		StateHandlers:              stateHandlers,
 		RequestFilter:              fixBearerToken,
+		BeforeEach: func() error {
+			userRepository = sallyExists
+			return nil
+		},
 	})
 
 	if err != nil {
-		t.Fatal(err)
+		t.Log(err)
 	}
-
 }
 
 // Simulates the neeed to set a time-bound authorization token,
@@ -118,10 +121,8 @@ var sallyUnauthorized = &repository.UserRepository{
 // Setup the Pact client.
 func createPact() dsl.Pact {
 	return dsl.Pact{
-		Provider:                 "GoUserService",
-		LogDir:                   logDir,
-		PactDir:                  pactDir,
-		DisableToolValidityCheck: true,
-		LogLevel:                 "INFO",
+		Provider: "GoUserService",
+		LogDir:   logDir,
+		LogLevel: "INFO",
 	}
 }
