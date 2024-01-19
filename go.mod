@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/google/uuid v1.3.0
-	github.com/pact-foundation/pact-go v1.8.0
 	github.com/pact-foundation/pact-go/v2 v2.0.2
 	github.com/stretchr/testify v1.8.4
 )
