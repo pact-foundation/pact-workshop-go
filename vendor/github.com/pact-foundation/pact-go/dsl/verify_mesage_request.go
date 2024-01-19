@@ -2,6 +2,8 @@ package dsl
 
 import (
 	"fmt"
+
+	"github.com/pact-foundation/pact-go/types"
 )
 
 // VerifyMessageRequest contains the verification logic
@@ -15,6 +17,11 @@ type VerifyMessageRequest struct {
 
 	// Tags to find in Broker for matrix-based testing
 	Tags []string
+
+	// Selectors are the way we specify which pacticipants and
+	// versions we want to use when configuring verifications
+	// See https://docs.pact.io/selectors for more
+	ConsumerVersionSelectors []types.ConsumerVersionSelector
 
 	// Username when authenticating to a Pact Broker.
 	BrokerUsername string
@@ -31,6 +38,9 @@ type VerifyMessageRequest struct {
 	// ProviderVersion is the semantical version of the Provider API.
 	ProviderVersion string
 
+	// ProviderTags is the set of tags to apply to the provider application version when results are published to the broker
+	ProviderTags []string
+
 	// MessageHandlers contains a mapped list of message handlers for a provider
 	// that will be rable to produce the correct message format for a given
 	// consumer interaction
@@ -40,6 +50,18 @@ type VerifyMessageRequest struct {
 	// that are used to setup a given provider state prior to the message
 	// verification step.
 	StateHandlers StateHandlers
+
+	// Specify an output directory to log all of the verification request/responses
+	// seen by the verification process. Useful to debug issues with your contract
+	// and API
+	PactLogDir string
+
+	// Specify the log verbosity of the CLI verifier process spawned through verification
+	// Useful for debugging issues with the framework itself
+	PactLogLevel string
+
+	// Tag the provider with the current git branch in the Pact Broker
+	TagWithGitBranch bool
 
 	// Arguments to the VerificationProvider
 	// Deprecated: This will be deleted after the native library replaces Ruby deps.
@@ -74,6 +96,18 @@ func (v *VerifyMessageRequest) Validate() error {
 
 	if v.PublishVerificationResults {
 		v.Args = append(v.Args, "--publish_verification_results", "true")
+	}
+
+	if v.PactLogDir != "" {
+		v.Args = append(v.Args, "--log-dir", v.PactLogDir)
+	}
+
+	if v.PactLogLevel != "" {
+		v.Args = append(v.Args, "--log-level", v.PactLogLevel)
+	}
+
+	if v.TagWithGitBranch {
+		v.Args = append(v.Args, "--tag-with-git-branch", "true")
 	}
 
 	return nil

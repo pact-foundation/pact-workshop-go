@@ -2,9 +2,11 @@ package types
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/pact-foundation/pact-go/proxy"
 )
@@ -12,19 +14,35 @@ import (
 // Hook functions are used to tap into the lifecycle of a Consumer or Provider test
 type Hook func() error
 
-// VerifyRequest contains the verification params.
+// VerifyRequest configures the pact verification process.
+//
 type VerifyRequest struct {
 	// URL to hit during provider verification.
 	ProviderBaseURL string
 
 	// Local/HTTP paths to Pact files.
+	// NOTE: if specified alongside BrokerURL it will run the verification once for
+	// each dynamic pact (Broker) discovered and user specified (URL) pact.
 	PactURLs []string
 
 	// Pact Broker URL for broker-based verification
+	// NOTE: if specified alongside PactURLs it will run the verification once for
+	// each dynamic pact (Broker) discovered and user specified (URL) pact.
 	BrokerURL string
 
-	// Tags to find in Broker for matrix-based testing
+	// Selectors are the way we specify which pacticipants and
+	// versions we want to use when configuring verifications
+	// See https://docs.pact.io/selectors for more
+	ConsumerVersionSelectors []ConsumerVersionSelector
+
+	// Retrieve the latest pacts with this consumer version tag
 	Tags []string
+
+	// Tags to apply to the provider application version
+	ProviderTags []string
+
+	// Branch to apply to the provider application version
+	ProviderBranch string
 
 	// ProviderStatesSetupURL is the endpoint to post current provider state
 	// to on the Provider API.
@@ -89,9 +107,27 @@ type VerifyRequest struct {
 	// the Provider API. Useful for setting custom certificates, MASSL etc.
 	CustomTLSConfig *tls.Config
 
+	// Allow pending pacts to be included in verification (see pact.io/pending)
+	EnablePending bool
+
+	// Pull in new WIP pacts from _any_ tag (see pact.io/wip)
+	IncludeWIPPactsSince *time.Time
+
+	// Specify an output directory to log all of the verification request/responses
+	// seen by the verification process. Useful to debug issues with your contract
+	// and API
+	PactLogDir string
+
+	// Specify the log verbosity of the CLI verifier process spawned through verification
+	// Useful for debugging issues with the framework itself
+	PactLogLevel string
+
 	// Verbose increases verbosity of output
 	// Deprecated
 	Verbose bool
+
+	// Tag the provider with the current git branch in the Pact Broker
+	TagWithGitBranch bool
 
 	// Arguments to the VerificationProvider
 	// Deprecated: This will be deleted after the native library replaces Ruby deps.
@@ -103,6 +139,7 @@ type VerifyRequest struct {
 // and should not be used outside of this library.
 func (v *VerifyRequest) Validate() error {
 	v.Args = []string{}
+	var err error
 
 	if len(v.PactURLs) != 0 {
 		v.Args = append(v.Args, v.PactURLs...)
@@ -110,6 +147,20 @@ func (v *VerifyRequest) Validate() error {
 
 	if len(v.PactURLs) == 0 && v.BrokerURL == "" {
 		return fmt.Errorf("One of 'PactURLs' or 'BrokerURL' must be specified")
+	}
+
+	if len(v.ConsumerVersionSelectors) != 0 {
+		for _, selector := range v.ConsumerVersionSelectors {
+			if err = selector.Validate(); err != nil {
+				return fmt.Errorf("invalid consumer version selector specified: %v", err)
+			}
+			body, err := json.Marshal(selector)
+			if err != nil {
+				return fmt.Errorf("invalid consumer version selector specified: %v", err)
+			}
+
+			v.Args = append(v.Args, "--consumer-version-selector", string(body))
+		}
 	}
 
 	if len(v.CustomProviderHeaders) != 0 {
@@ -172,6 +223,34 @@ func (v *VerifyRequest) Validate() error {
 
 	for _, tag := range v.Tags {
 		v.Args = append(v.Args, "--consumer-version-tag", tag)
+	}
+
+	for _, tag := range v.ProviderTags {
+		v.Args = append(v.Args, "--provider-version-tag", tag)
+	}
+
+	if v.ProviderBranch != "" {
+		v.Args = append(v.Args, "--provider-version-branch", v.ProviderBranch)
+	}
+
+	if v.EnablePending {
+		v.Args = append(v.Args, "--enable-pending")
+	}
+
+	if v.IncludeWIPPactsSince != nil {
+		v.Args = append(v.Args, "--include-wip-pacts-since", v.IncludeWIPPactsSince.Format(time.RFC3339))
+	}
+
+	if v.PactLogDir != "" {
+		v.Args = append(v.Args, "--log-dir", v.PactLogDir)
+	}
+
+	if v.PactLogLevel != "" {
+		v.Args = append(v.Args, "--log-level", v.PactLogLevel)
+	}
+
+	if v.TagWithGitBranch {
+		v.Args = append(v.Args, "--tag-with-git-branch", "true")
 	}
 
 	return nil

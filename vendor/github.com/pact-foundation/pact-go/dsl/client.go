@@ -1,6 +1,7 @@
 package dsl
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pact-foundation/pact-go/client"
@@ -32,7 +34,7 @@ type Client interface {
 	RemoveAllServers(server *types.MockServer) []*types.MockServer
 
 	// VerifyProvider runs the verification process against a running Provider.
-	VerifyProvider(request types.VerifyRequest) (types.ProviderVerifierResponse, error)
+	VerifyProvider(request types.VerifyRequest) ([]types.ProviderVerifierResponse, error)
 
 	// UpdateMessagePact adds a pact message to a contract file
 	UpdateMessagePact(request types.PactMessageRequest) error
@@ -68,14 +70,14 @@ type PactClient struct {
 }
 
 // newClient creates a new Pact client manager with the provided services
-func newClient(MockServiceManager client.Service, verificationServiceManager client.Service, messageServiceManager client.Service, publishServiceManager client.Service) *PactClient {
-	MockServiceManager.Setup()
+func newClient(mockServiceManager client.Service, verificationServiceManager client.Service, messageServiceManager client.Service, publishServiceManager client.Service) *PactClient {
+	mockServiceManager.Setup()
 	verificationServiceManager.Setup()
 	messageServiceManager.Setup()
 	publishServiceManager.Setup()
 
 	return &PactClient{
-		pactMockSvcManager:     MockServiceManager,
+		pactMockSvcManager:     mockServiceManager,
 		verificationSvcManager: verificationServiceManager,
 		messageSvcManager:      messageServiceManager,
 		publishSvcManager:      publishServiceManager,
@@ -95,8 +97,11 @@ func (p *PactClient) StartServer(args []string, port int) *types.MockServer {
 	svc := p.pactMockSvcManager.NewService(args)
 	cmd := svc.Start()
 
-	waitForPort(port, p.getNetworkInterface(), p.Address, p.TimeoutDuration,
+	err := waitForPort(port, p.getNetworkInterface(), p.Address, p.TimeoutDuration,
 		fmt.Sprintf(`Timed out waiting for Mock Server to start on port %d - are you sure it's running?`, port))
+	if err != nil {
+		log.Println("[ERROR] client: failed to wait for Mock Server:", err)
+	}
 
 	return &types.MockServer{
 		Pid:  cmd.Process.Pid,
@@ -130,12 +135,14 @@ func (p *PactClient) StopServer(server *types.MockServer) (*types.MockServer, er
 }
 
 // RemoveAllServers stops all remote Pact Mock Servers.
-func (p *PactClient) RemoveAllServers(server *types.MockServer) []*types.MockServer {
+func (p *PactClient) RemoveAllServers(_ *types.MockServer) []*types.MockServer {
 	log.Println("[DEBUG] client: stop server")
 
 	for _, s := range p.verificationSvcManager.List() {
 		if s != nil {
-			p.pactMockSvcManager.Stop(s.Process.Pid)
+			if _, err := p.pactMockSvcManager.Stop(s.Process.Pid); err != nil {
+				log.Println("[ERROR] client: stop server failed:", err)
+			}
 		}
 	}
 	return nil
@@ -143,9 +150,9 @@ func (p *PactClient) RemoveAllServers(server *types.MockServer) []*types.MockSer
 
 // VerifyProvider runs the verification process against a running Provider.
 // TODO: extract/refactor the stdout/error streaems from these functions
-func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.ProviderVerifierResponse, error) {
+func (p *PactClient) VerifyProvider(request types.VerifyRequest) ([]types.ProviderVerifierResponse, error) {
 	log.Println("[DEBUG] client: verifying a provider")
-	var response types.ProviderVerifierResponse
+	response := make([]types.ProviderVerifierResponse, 0)
 
 	// Convert request into flags, and validate request
 	err := request.Validate()
@@ -156,8 +163,11 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 	address := getAddress(request.ProviderBaseURL)
 	port := getPort(request.ProviderBaseURL)
 
-	waitForPort(port, p.getNetworkInterface(), address, p.TimeoutDuration,
+	err = waitForPort(port, p.getNetworkInterface(), address, p.TimeoutDuration,
 		fmt.Sprintf(`Timed out waiting for Provider API to start on port %d - are you sure it's running?`, port))
+	if err != nil {
+		return response, err
+	}
 
 	// Run command, splitting out stderr and stdout. The command can fail for
 	// several reasons:
@@ -179,26 +189,46 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 	if err != nil {
 		return response, err
 	}
+
+	// Buffered channel: wait for all reading to complete
+	var wg sync.WaitGroup
+	verifications := []string{}
+	var stdErr strings.Builder
+
+	// Split by lines, as the content is JSONL formatted
+	// Each pact is verified by line, and the results (as JSON) sent to stdout.
+	// See https://github.com/pact-foundation/pact-go/issues/88#issuecomment-404686337
+	stdOutScanner := bufio.NewScanner(stdOutPipe)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		stdOutBuf := make([]byte, bufio.MaxScanTokenSize)
+		stdOutScanner.Buffer(stdOutBuf, 64*1024*1024)
+
+		for stdOutScanner.Scan() {
+			verifications = append(verifications, stdOutScanner.Text())
+		}
+	}()
+
+	// Scrape errors
+	stdErrScanner := bufio.NewScanner(stdErrPipe)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for stdErrScanner.Scan() {
+			stdErr.WriteString(fmt.Sprintf("%s\n", stdErrScanner.Text()))
+		}
+	}()
+
 	err = cmd.Start()
 	if err != nil {
 		return response, err
 	}
-	stdOut, err := ioutil.ReadAll(stdOutPipe)
-	if err != nil {
-		return response, err
-	}
-	stdErr, err := ioutil.ReadAll(stdErrPipe)
-	if err != nil {
-		return response, err
-	}
 
+	// Wait for watch goroutine before Cmd.Wait(), race condition!
 	err = cmd.Wait()
+	wg.Wait()
 
-	// Split by lines, as the content is now JSONL
-	// See https://github.com/pact-foundation/pact-go/issues/88#issuecomment-404686337
-	verifications := strings.Split(string(stdOut), "\n")
-
-	var verification types.ProviderVerifierResponse
 	for _, v := range verifications {
 		v = strings.TrimSpace(v)
 
@@ -207,9 +237,10 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 		// logging to stdout breaks the JSON response
 		// https://github.com/pact-foundation/pact-ruby/commit/06fa61581512ba5570c315d089f2c0fc23c8cb11
 		if v != "" && strings.Index(v, "INFO") != 0 {
+			var verification types.ProviderVerifierResponse
 			dErr := json.Unmarshal([]byte(v), &verification)
 
-			response.Examples = append(response.Examples, verification.Examples...)
+			response = append(response, verification)
 
 			if dErr != nil {
 				err = dErr
@@ -221,7 +252,7 @@ func (p *PactClient) VerifyProvider(request types.VerifyRequest) (types.Provider
 		return response, err
 	}
 
-	return response, fmt.Errorf("error verifying provider: %s\n\nSTDERR:\n%s\n\nSTDOUT:\n%s", err, stdErr, stdOut)
+	return response, fmt.Errorf("error verifying provider: %s\n\nSTDERR:\n%s\n\nSTDOUT:\n%s", err, stdErr.String(), strings.Join(verifications, "\n"))
 }
 
 // UpdateMessagePact adds a pact message to a contract file
@@ -379,7 +410,7 @@ func getAddress(rawURL string) string {
 // Use this to wait for a port to be running prior
 // to running tests.
 var waitForPort = func(port int, network string, address string, timeoutDuration time.Duration, message string) error {
-	log.Println("[DEBUG] waiting for port", port, "to become available")
+	log.Println("[DEBUG] waiting for port", port, "to become available on", address, "after", timeoutDuration)
 	timeout := time.After(timeoutDuration)
 
 	for {
@@ -401,13 +432,13 @@ var waitForPort = func(port int, network string, address string, timeoutDuration
 func sanitiseRubyResponse(response string) string {
 	log.Println("[TRACE] response from Ruby process pre-sanitisation:", response)
 
-	r := regexp.MustCompile("(?m)^\\s*#.*$")
+	r := regexp.MustCompile(`(?m)^\s*#.*$`)
 	s := r.ReplaceAllString(response, "")
 
 	r = regexp.MustCompile("(?m).*bundle exec rake pact:verify.*$")
 	s = r.ReplaceAllString(s, "")
 
-	r = regexp.MustCompile("\\n+")
+	r = regexp.MustCompile(`\n+`)
 	s = r.ReplaceAllString(s, "\n")
 
 	return s

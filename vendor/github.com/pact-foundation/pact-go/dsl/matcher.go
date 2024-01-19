@@ -14,7 +14,6 @@ import (
 const (
 	hexadecimal = `[0-9a-fA-F]+`
 	ipAddress   = `(\d{1,3}\.)+\d{1,3}`
-	ipv6Address = `(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,6}\Z)|(\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\Z)|(\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}\Z)|(\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}\Z)|(\A([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}\Z)|(\A([0-9a-f]{1,4}:){1,6}(:[0-9a-f]{1,4}){1,1}\Z)|(\A(([0-9a-f]{1,4}:){1,7}|:):\Z)|(\A:(:[0-9a-f]{1,4}){1,7}\Z)|(\A((([0-9a-f]{1,4}:){6})(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3})\Z)|(\A(([0-9a-f]{1,4}:){5}[0-9a-f]{1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3})\Z)|(\A([0-9a-f]{1,4}:){5}:[0-9a-f]{1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,4}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,3}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,2}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,1}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A(([0-9a-f]{1,4}:){1,5}|:):(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)|(\A:(:[0-9a-f]{1,4}){1,5}:(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\Z)`
 	uuid        = `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`
 	timestamp   = `^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$`
 	date        = `^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))?)`
@@ -22,6 +21,9 @@ const (
 )
 
 var timeExample = time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC)
+
+var fullRegex = regexp.MustCompile(`regex=(.*)$`)
+var exampleRegex = regexp.MustCompile(`^example=(.*)`)
 
 type eachLike struct {
 	Contents interface{} `json:"contents"`
@@ -127,7 +129,7 @@ func Term(generate string, matcher string) Matcher {
 	}
 }
 
-// HexValue defines a matcher that accepts hexidecimal values.
+// HexValue defines a matcher that accepts hexadecimal values.
 func HexValue() Matcher {
 	return Regex("3F", hexadecimal)
 }
@@ -299,7 +301,15 @@ func match(srcType reflect.Type, params params) Matcher {
 
 		for i := 0; i < srcType.NumField(); i++ {
 			field := srcType.Field(i)
-			result[field.Tag.Get("json")] = match(field.Type, pluckParams(field.Type, field.Tag.Get("pact")))
+			// Skip unexported fields.
+			if field.PkgPath != "" {
+				continue
+			}
+			fieldName := getJsonFieldName(field)
+			if fieldName == "" {
+				continue
+			}
+			result[fieldName] = match(field.Type, pluckParams(field.Type, field.Tag.Get("pact")))
 		}
 		return result
 	case reflect.String:
@@ -330,6 +340,24 @@ func match(srcType reflect.Type, params params) Matcher {
 	default:
 		panic(fmt.Sprintf("match: unhandled type: %v", srcType))
 	}
+}
+
+// getJsonFieldName retrieves the name for a JSON field as
+// https://golang.org/pkg/encoding/json/#Marshal would do.
+func getJsonFieldName(field reflect.StructField) string {
+	jsonTag := field.Tag.Get("json")
+	if jsonTag == "" {
+		return field.Name
+	}
+	// Field should be ignored according to the JSON marshal documentation.
+	if jsonTag == "-" {
+		return ""
+	}
+	commaIndex := strings.Index(jsonTag, ",")
+	if commaIndex > -1 {
+		return jsonTag[:commaIndex]
+	}
+	return jsonTag
 }
 
 // params are plucked from 'pact' struct tags as match() traverses
@@ -399,9 +427,6 @@ func pluckParams(srcType reflect.Type, pactTag string) params {
 			triggerInvalidPactTagPanic(pactTag, err)
 		}
 	case reflect.String:
-		fullRegex, _ := regexp.Compile(`regex=(.*)$`)
-		exampleRegex, _ := regexp.Compile(`^example=(.*)`)
-
 		if fullRegex.Match([]byte(pactTag)) {
 			components := strings.Split(pactTag, ",regex=")
 
@@ -423,6 +448,8 @@ func pluckParams(srcType reflect.Type, pactTag string) params {
 
 			params.str.example = components[1]
 		}
+	case reflect.Ptr:
+		return pluckParams(srcType.Elem(), pactTag)
 	}
 
 	return params

@@ -83,8 +83,6 @@ func HTTPReverseProxy(options Options) (int, error) {
 		Path:   options.TargetPath,
 	}
 
-	// TODO: may be able to revert to the default single proxy
-	//       and just override the transport!
 	proxy := createProxy(url, options.InternalRequestPathPrefix)
 	proxy.Transport = customTransport{tlsConfig: options.CustomTLSConfig}
 
@@ -99,7 +97,7 @@ func HTTPReverseProxy(options Options) (int, error) {
 	wrapper := chainHandlers(append(options.Middleware, loggingMiddleware)...)
 
 	log.Println("[DEBUG] starting reverse proxy on port", port)
-	go http.ListenAndServe(fmt.Sprintf(":%d", port), wrapper(proxy))
+	go http.ListenAndServe(fmt.Sprintf(":%d", port), wrapper(proxy)) // nolint:errcheck
 
 	return port, nil
 }
@@ -138,7 +136,11 @@ func (c customTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	var DefaultTransport http.RoundTripper = transport
 
 	res, err := DefaultTransport.RoundTrip(r)
-	b, err = httputil.DumpResponse(res, false)
+	if err != nil {
+		log.Println("[ERROR]", err)
+		return nil, err
+	}
+	b, err = httputil.DumpResponse(res, true)
 	log.Println("[TRACE] proxied server response\n", string(b))
 
 	return res, err
@@ -156,7 +158,7 @@ func createProxy(target *url.URL, ignorePrefix string) *httputil.ReverseProxy {
 			req.Host = target.Host
 
 			req.URL.Path = singleJoiningSlash(target.Path, req.URL.Path)
-			log.Println("[DEBUG] outgoing request", req.URL)
+			log.Println("[DEBUG] outgoing request to target", req.URL)
 			if targetQuery == "" || req.URL.RawQuery == "" {
 				req.URL.RawQuery = targetQuery + req.URL.RawQuery
 			} else {
