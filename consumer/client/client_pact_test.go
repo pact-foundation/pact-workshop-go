@@ -36,7 +36,7 @@ type S = matchers.S
 type Map = matchers.MapMatcher
 
 // var commonHeaders = Map{
-// 	b.header("Content-Type":         Term("application/json; charset=utf-8", `application\/json`)).
+// 	b.header("Content-Type":         Term("application/json", `application\/json`)).
 // 	b.header("X-Api-Correlation-Id": Like("100"))
 // }
 
@@ -83,7 +83,7 @@ func TestClientPact_GetUser(t *testing.T) {
 			}).
 			WillRespondWith(200, func(b *consumer.V2ResponseBuilder) {
 				b.BodyMatch(model.User{}).
-					Header("Content-Type", Term("application/json; charset=utf-8", `application\/json`)).
+					Header("Content-Type", Term("application/json", `application\/json`)).
 					Header("X-Api-Correlation-Id", Like("100"))
 			}).
 			ExecuteTest(t, func(config consumer.MockServerConfig) error {
@@ -123,7 +123,7 @@ func TestClientPact_GetUser(t *testing.T) {
 				b.Header("Authorization", Like("Bearer 2019-01-01"))
 			}).
 			WillRespondWith(404, func(b *consumer.V2ResponseBuilder) {
-				b.Header("Content-Type", Term("application/json; charset=utf-8", `application\/json`)).
+				b.Header("Content-Type", Term("application/json", `application\/json`)).
 					Header("X-Api-Correlation-Id", Like("100"))
 			}).
 			ExecuteTest(t, func(config consumer.MockServerConfig) error {
@@ -155,7 +155,7 @@ func TestClientPact_GetUser(t *testing.T) {
 			UponReceiving("A request to login with user 'sally'").
 			WithRequestPathMatcher("GET", Regex("/user/"+strconv.Itoa(id), "/user/[0-9]+")).
 			WillRespondWith(401, func(b *consumer.V2ResponseBuilder) {
-				b.Header("Content-Type", Term("application/json; charset=utf-8", `application\/json`)).
+				b.Header("Content-Type", Term("application/json", `application\/json`)).
 					Header("X-Api-Correlation-Id", Like("100"))
 			}).
 			ExecuteTest(t, func(config consumer.MockServerConfig) error {
