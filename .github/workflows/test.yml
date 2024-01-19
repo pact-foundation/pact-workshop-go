@@ -1,0 +1,43 @@
+name: Pact-Workshop(GoLang)
+
+on:
+    push:
+        branches:
+            - v2_upgrade
+    pull_request:
+        branches:
+            - v2_upgrade
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                    go-version: 1.21
+            - name: install
+              run: make install
+            - name: consumer unit tests
+              run: make unit
+            - name: consumer pact tests
+              run: make consumer
+            - name: start pact broker
+              run: make broker
+            - name: publish consumer pacts
+              run: make publish
+            - name: provider pact tests
+              run: make provider
+            - name: provider check safe to deploy
+              run: make deploy-provider
+            - name: provider record deployment
+              run: make record-deploy-provider
+            - name: consumer check safe to deploy
+              run: make record-deploy-consumer
+            - name: consumer check safe to deploy
+              run: make deploy-consumer
+            - name: consumer record deployment
+              run: make record-deploy-consumer
+
