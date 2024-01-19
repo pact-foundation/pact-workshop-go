@@ -548,19 +548,19 @@ $ make publish
 
 --- 📝 Publishing Pacts
 go run consumer/client/pact/publish.go
-Publishing Pact files to broker /Users/matthewfellows/development/pact-workshop-go/pacts test.pact.dius.com.au
+Publishing Pact files to broker /Users/matthewfellows/development/pact-workshop-go/pacts test.pactflow.io
 2019/10/30 15:23:09 [INFO]
 2019/10/30 15:23:09 [INFO] Tagging version 1.0.0 of GoAdminService as "master"
-2019/10/30 15:23:09 [INFO] Publishing GoAdminService/GoUserService pact to pact broker at https://test.pact.dius.com.au
+2019/10/30 15:23:09 [INFO] Publishing GoAdminService/GoUserService pact to pact broker at https://test.pactflow.io
 2019/10/30 15:23:09 [INFO] The given version of pact is already published. Overwriting...
 2019/10/30 15:23:09 [INFO] The latest version of this pact can be accessed at the following URL (use this to configure the provider verification):
-2019/10/30 15:23:09 [INFO] https://test.pact.dius.com.au/pacts/provider/GoUserService/consumer/GoAdminService/latest
+2019/10/30 15:23:09 [INFO] https://test.pactflow.io/pacts/provider/GoUserService/consumer/GoAdminService/latest
 2019/10/30 15:23:09 [INFO]
 2019/10/30 15:23:09 [DEBUG] response from publish <nil>
 
 Pact contract publishing complete!
 
-Head over to https://test.pact.dius.com.au and login with
+Head over to https://test.pactflow.io and login with
 to see your published contracts.
 ```
 
