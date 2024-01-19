@@ -24,7 +24,7 @@ func TestPactProvider(t *testing.T) {
 	// Verify the Provider - Tag-based Published Pacts for any known consumers
 	_, err := pact.VerifyProvider(t, types.VerifyRequest{
 		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
-		Tags:               []string{"master"},
+		ProviderBranch:     os.Getenv("VERSION_BRANCH"),
 		FailIfNoPactsFound: false,
 		// Use this if you want to test without the Pact Broker
 		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
@@ -32,7 +32,7 @@ func TestPactProvider(t *testing.T) {
 		BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
 		BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),
 		PublishVerificationResults: true,
-		ProviderVersion:            "1.0.0",
+		ProviderVersion:            os.Getenv("VERSION_COMMIT"),
 		StateHandlers:              stateHandlers,
 		RequestFilter:              fixBearerToken,
 	})

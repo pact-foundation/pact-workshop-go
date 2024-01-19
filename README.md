@@ -573,7 +573,7 @@ All we need to do for the provider is update where it finds its pacts, from loca
 ```go
 	_, err := pact.VerifyProvider(t, types.VerifyRequest{
 		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
-		Tags:               []string{"master"},
+		Branch:              "master",
 		FailIfNoPactsFound: false,
 		Verbose:            false,
 		// Use this if you want to test without the Pact Broker

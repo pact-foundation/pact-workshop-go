@@ -13,7 +13,7 @@ import (
 func main() {
 
 	// Enable when running E2E/integration tests before a release
-	version := "1.0.0"
+	version := os.Getenv("VERSION_COMMIT")
 
 	// Publish the Pacts...
 	p := dsl.Publisher{}
@@ -23,7 +23,7 @@ func main() {
 		PactURLs:        []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
 		PactBroker:      fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
 		ConsumerVersion: version,
-		Tags:            []string{"master"},
+		Branch:          os.Getenv("VERSION_BRANCH"),
 		BrokerUsername:  os.Getenv("PACT_BROKER_USERNAME"),
 		BrokerPassword:  os.Getenv("PACT_BROKER_PASSWORD"),
 	})

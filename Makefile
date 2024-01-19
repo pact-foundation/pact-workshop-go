@@ -19,7 +19,8 @@ deploy-consumer: install
 		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
 		--broker-username $(PACT_BROKER_USERNAME) \
 		--broker-password $(PACT_BROKER_PASSWORD) \
-		--latest
+		--version ${VERSION_COMMIT} \
+		--to-environment production
 
 deploy-provider: install
 	@echo "--- ✅ Checking if we can deploy provider"
@@ -28,11 +29,22 @@ deploy-provider: install
 		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
 		--broker-username $(PACT_BROKER_USERNAME) \
 		--broker-password $(PACT_BROKER_PASSWORD) \
-		--latest
+		--version ${VERSION_COMMIT} \
+		--to-environment production
+record-deploy-provider: install
+	@echo "--- ✅ Recording deployment of provider"
+	pact-broker record-deployment \
+		--pacticipant $(PROVIDER_NAME) \
+		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
+		--broker-username $(PACT_BROKER_USERNAME) \
+		--broker-password $(PACT_BROKER_PASSWORD) \
+		--version ${VERSION_COMMIT} \
+		--environment test
 
-publish: install
+publish:
 	@echo "--- 📝 Publishing Pacts"
-	go run consumer/client/pact/publish.go
+	pact/bin/pact-broker publish ${PWD}/pacts --consumer-app-version ${VERSION_COMMIT} --branch ${VERSION_BRANCH} \
+		-b $(PACT_BROKER_PROTO)://$(PACT_BROKER_URL) -u ${PACT_BROKER_USERNAME} -p ${PACT_BROKER_PASSWORD}
 	@echo
 	@echo "Pact contract publishing complete!"
 	@echo
@@ -40,7 +52,6 @@ publish: install
 	@echo "=> Username: $(PACT_BROKER_USERNAME)"
 	@echo "=> Password: $(PACT_BROKER_PASSWORD)"
 	@echo "to see your published contracts.	"
-
 unit:
 	@echo "--- 🔨Running Unit tests "
 	go test github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientUnit'
