@@ -27,8 +27,7 @@ type PublishRequest struct {
 
 	// Tags help you organise your Pacts for different testing purposes.
 	// e.g. "production", "master" and "development" are some common examples.
-	Tags   []string
-	Branch string
+	Tags []string
 
 	// Verbose increases verbosity of output
 	// Deprecated
@@ -70,10 +69,6 @@ func (p *PublishRequest) Validate() error {
 
 	if p.BrokerToken != "" {
 		p.Args = append(p.Args, "--broker-token", p.BrokerToken)
-	}
-
-	if p.Branch != "" {
-		p.Args = append(p.Args, "--branch", p.Branch)
 	}
 
 	if p.ConsumerVersion == "" {
