@@ -3,9 +3,7 @@ include ./make/config.mk
 install:
 	@if [ ! -d pact/bin ]; then\
 		echo "--- Installing Pact CLI dependencies";\
-		curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | bash;\
-		go install github.com/pact-foundation/pact-go/v2@2.x.x;\
-		pact-go -l DEBUG install;\
+		curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | bash;
     fi
 
 install_pact_ffi_lib:

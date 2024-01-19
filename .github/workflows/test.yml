@@ -23,7 +23,7 @@ jobs:
                     go-version: 1.21
             - name: install
               run: make install
-            - name: install
+            - name: install_pact_ffi_lib
               run: make install_pact_ffi_lib
             - name: consumer unit tests
               run: make unit
