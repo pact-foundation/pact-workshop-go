@@ -8,7 +8,7 @@ install:
 		pact-go -l DEBUG install;\
     fi
 	go install github.com/pact-foundation/pact-go/v2@2.x.x;
-	$$HOME/go/bin/pact-go -l DEBUG install;
+	sudo $$HOME/go/bin/pact-go -l DEBUG install;
 
 run-consumer:
 	@go run consumer/client/cmd/main.go
