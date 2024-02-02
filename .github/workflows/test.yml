@@ -1,0 +1,25 @@
+name: Pact-Workshop(GoLang)
+
+on:
+    push:
+        branches:
+            - step2
+    pull_request:
+        branches:
+            - step2
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+              shell: bash
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                    go-version: 1.21
+            - name: run consumer app
+              run: make run-consumer || true

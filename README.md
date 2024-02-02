@@ -1,8 +1,7 @@
 # Pact Go workshop
 
 ## Introduction
-
-This workshop is aimed at demonstrating core features and benefits of contract testing with Pact. It uses a simple example
+This workshop is aimed at demonstrating core features and benefits of contract testing with Pact.
 
 Whilst contract testing can be applied retrospectively to systems, we will follow the [consumer driven contracts](https://martinfowler.com/articles/consumerDrivenContracts.html) approach in this workshop - where a new consumer and provider are created in parallel to evolve a service over time, especially where there is some uncertainty with what is to be built.
 
@@ -37,11 +36,12 @@ There are two components in scope for our workshop.
 
 For the purposes of this workshop, we won't implement any functionality of the Admin Service, except the bits that require User information.
 
+**Project Structure**
 
 The key packages are shown below:
 
 ```sh
-├── consumer		  # Contains the Admin Service Team (client) project
+├── consumer	  # Contains the Admin Service Team (client) project
 ├── model         # Shared domain model
 ├── pact          # The directory of the Pact Standalone CLI
 ├── provider      # The User Service Team (provider) project
@@ -55,7 +55,7 @@ We need to first create an HTTP client to make the calls to our provider service
 
 _NOTE_: even if the API client had been been graciously provided for us by our Provider Team, it doesn't mean that we shouldn't write contract tests - because the version of the client we have may not always be in sync with the deployed API - and also because we will write tests on the output appropriate to our specific needs.
 
-This User Service expects a `user` path parameter, and then returns some simple json back:
+This User Service expects a `users` path parameter, and then returns some simple json back:
 
 ![Sequence Diagram](diagrams/workshop_step1_class-sequence-diagram.png)
 
