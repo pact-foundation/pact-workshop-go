@@ -215,7 +215,7 @@ Running this test still passes, but it creates a pact file which we can use to v
 $ make consumer
 ```
 
-A pact file should have been generated in *pacts/goadminservice-gouserservice.json*
+A pact file should have been generated in *pacts/GoAdminService-GoUserService.json*
 
 *Move on to [step 4](//github.com/pact-foundation/pact-workshop-go/tree/step4)*
 
@@ -605,7 +605,7 @@ All we need to do for the provider is update where it finds its pacts, from loca
 		FailIfNoPactsFound: false,
 		Verbose:            false,
 		// Use this if you want to test without the Pact Broker
-		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
+		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
 		BrokerURL:                  fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
 		BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
 		BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),

@@ -31,7 +31,7 @@ func TestPactProvider(t *testing.T) {
 		ProviderBranch:     os.Getenv("VERSION_BRANCH"),
 		FailIfNoPactsFound: false,
 		// Use this if you want to test without the Pact Broker
-		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
+		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
 		BrokerURL:                  fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
 		BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
 		BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),
