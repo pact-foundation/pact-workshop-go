@@ -168,9 +168,7 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 			AddInteraction().
 			Given("User sally exists").
 			UponReceiving("A request to login with user 'sally'").
-			WithRequestPathMatcher("GET", Regex("/users/"+strconv.Itoa(id), "/users/[0-9]+"), func(b *consumer.V2RequestBuilder) {
-				b.Header("Authorization", Like("Bearer 2019-01-01"))
-			}).
+			WithRequestPathMatcher("GET", Regex("/users/"+strconv.Itoa(id), "/users/[0-9]+")).
 			WillRespondWith(200, func(b *consumer.V2ResponseBuilder) {
 				b.BodyMatch(model.User{}).
 					Header("Content-Type", Term("application/json", `application\/json`)).
@@ -188,7 +186,7 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 				}
 
 				// // Execute the API client
-				user, err := client.WithToken("2019-01-01").GetUser(id)
+				user, err := client.GetUser(id)
 
 				// // Assert basic fact
 				if user.ID != id {
@@ -313,9 +311,7 @@ Let's write a test for this scenario, and then generate an updated pact file.
 			AddInteraction().
 			Given("User sally does not exist").
 			UponReceiving("A request to login with user 'sally'").
-			WithRequestPathMatcher("GET", Regex("/user/"+strconv.Itoa(id), "/user/[0-9]+"), func(b *consumer.V2RequestBuilder) {
-				b.Header("Authorization", Like("Bearer 2019-01-01"))
-			}).
+			WithRequestPathMatcher("GET", Regex("/user/"+strconv.Itoa(id), "/user/[0-9]+")).
 			WillRespondWith(404, func(b *consumer.V2ResponseBuilder) {
 				b.Header("Content-Type", Term("application/json", `application\/json`)).
 					Header("X-Api-Correlation-Id", Like("100"))
@@ -332,7 +328,7 @@ Let's write a test for this scenario, and then generate an updated pact file.
 				}
 
 				// // Execute the API client
-				_, err := client.WithToken("2019-01-01").GetUser(id)
+				_, err := client.GetUser(id)
 				assert.Equal(t, ErrNotFound, err)
 				return nil
 			})
