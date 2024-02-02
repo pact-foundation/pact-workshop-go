@@ -90,7 +90,6 @@ func TestClientPact_GetUser(t *testing.T) {
 	})
 
 	t.Run("the user does not exist", func(t *testing.T) {
-
 		id := 10
 
 		err = mockProvider.
@@ -120,6 +119,7 @@ func TestClientPact_GetUser(t *testing.T) {
 				assert.Equal(t, ErrNotFound, err)
 				return nil
 			})
+		assert.NoError(t, err)
 
 	})
 	t.Run("not authenticated", func(t *testing.T) {
