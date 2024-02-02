@@ -2,30 +2,34 @@ package provider
 
 import (
 	"fmt"
-	"log"
+	l "log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
-	"github.com/pact-foundation/pact-go/types"
-	"github.com/pact-foundation/pact-go/utils"
+	"github.com/pact-foundation/pact-go/v2/log"
+	"github.com/pact-foundation/pact-go/v2/provider"
+	"github.com/pact-foundation/pact-go/v2/utils"
 )
 
 // The Provider verification
 func TestPactProvider(t *testing.T) {
+	log.SetLogLevel("DEBUG")
+
 	go startInstrumentedProvider()
 
-	pact := createPact()
+	verifier := provider.NewVerifier()
 
-	// Verify the Provider - Tag-based Published Pacts for any known consumers
-	_, err := pact.VerifyProvider(t, types.VerifyRequest{
-		ProviderBaseURL: fmt.Sprintf("http://127.0.0.1:%d", port),
-		Tags:            []string{"master"},
-		PactURLs:        []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
-		ProviderVersion: "1.0.0",
+	// Verify the Provider - From file
+	err := verifier.VerifyProvider(t, provider.VerifyRequest{
+		Provider:           "GoUserService",
+		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
+		ProviderBranch:     os.Getenv("VERSION_BRANCH"),
+		FailIfNoPactsFound: false,
+		PactFiles:          []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
+		ProviderVersion:    os.Getenv("VERSION_COMMIT"),
 	})
 
 	if err != nil {
@@ -40,26 +44,14 @@ func startInstrumentedProvider() {
 
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatal(err)
+		l.Fatal(err)
 	}
 	defer ln.Close()
 
-	log.Printf("API starting: port %d (%s)", port, ln.Addr())
-	log.Printf("API terminating: %v", http.Serve(ln, mux))
+	l.Printf("API starting: port %d (%s)", port, ln.Addr())
+	l.Printf("API terminating: %v", http.Serve(ln, mux))
 
 }
 
 // Configuration / Test Data
-var dir, _ = os.Getwd()
-var pactDir = fmt.Sprintf("%s/../../pacts", dir)
-var logDir = fmt.Sprintf("%s/log", dir)
 var port, _ = utils.GetFreePort()
-
-// Setup the Pact client.
-func createPact() dsl.Pact {
-	return dsl.Pact{
-		Provider: "GoUserService",
-		LogDir:   logDir,
-		LogLevel: "INFO",
-	}
-}
