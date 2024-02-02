@@ -19,7 +19,7 @@ import (
 
 // The Provider verification
 func TestPactProvider(t *testing.T) {
-	log.SetLogLevel("DEBUG")
+	log.SetLogLevel("INFO")
 
 	go startInstrumentedProvider()
 
