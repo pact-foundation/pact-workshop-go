@@ -73,7 +73,7 @@ func TestClientPact_GetUser(t *testing.T) {
 				}
 
 				// // Execute the API client
-				user, err := client.WithToken("2019-01-01").GetUser(id)
+				user, err := client.GetUser(id)
 
 				// // Assert basic fact
 				if user.ID != id {
@@ -111,7 +111,7 @@ func TestClientPact_GetUser(t *testing.T) {
 				}
 
 				// // Execute the API client
-				_, err := client.WithToken("2019-01-01").GetUser(id)
+				_, err := client.GetUser(id)
 				assert.Equal(t, ErrNotFound, err)
 				return nil
 			})
