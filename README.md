@@ -41,7 +41,7 @@ For the purposes of this workshop, we won't implement any functionality of the A
 The key packages are shown below:
 
 ```sh
-├── consumer		  # Contains the Admin Service Team (client) project
+├── consumer	  # Contains the Admin Service Team (client) project
 ├── model         # Shared domain model
 ├── pact          # The directory of the Pact Standalone CLI
 ├── provider      # The User Service Team (provider) project
@@ -92,7 +92,7 @@ func TestClientUnit_GetUser(t *testing.T) {
 
 	// Setup mock server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		assert.Equal(t, req.URL.String(), fmt.Sprintf("/user/%d", userID))
+		assert.Equal(t, req.URL.String(), fmt.Sprintf("/users/%d", userID))
 		user, _ := json.Marshal(model.User{
 			FirstName: "Sally",
 			LastName:  "McDougall",
@@ -164,35 +164,42 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 	t.Run("the user exists", func(t *testing.T) {
 		id := 10
 
-		pact.
+		err = mockProvider.
 			AddInteraction().
 			Given("User sally exists").
 			UponReceiving("A request to login with user 'sally'").
-			WithRequest(request{
-				Method:  "GET",
-				Path:    term("/users/10", "/user/[0-9]+"),
-				Headers: headersWithToken,
+			WithRequestPathMatcher("GET", Regex("/users/"+strconv.Itoa(id), "/users/[0-9]+"), func(b *consumer.V2RequestBuilder) {
+				b.Header("Authorization", Like("Bearer 2019-01-01"))
 			}).
-			WillRespondWith(dsl.Response{
-				Status:  200,
-				Body:    dsl.Match(model.User{}),
-				Headers: commonHeaders,
+			WillRespondWith(200, func(b *consumer.V2ResponseBuilder) {
+				b.BodyMatch(model.User{}).
+					Header("Content-Type", Term("application/json", `application\/json`)).
+					Header("X-Api-Correlation-Id", Like("100"))
+			}).
+			ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				// Act: test our API client behaves correctly
+
+				// Get the Pact mock server URL
+				u, _ = url.Parse("http://" + config.Host + ":" + strconv.Itoa(config.Port))
+
+				// Initialise the API client and point it at the Pact mock server
+				client = &Client{
+					BaseURL: u,
+				}
+
+				// // Execute the API client
+				user, err := client.WithToken("2019-01-01").GetUser(id)
+
+				// // Assert basic fact
+				if user.ID != id {
+					return fmt.Errorf("wanted user with ID %d but got %d", id, user.ID)
+				}
+
+				return err
 			})
 
-		err := pact.Verify(func() error {
-			user, err := client.WithToken("2019-01-01").GetUser(id)
+		assert.NoError(t, err)
 
-			// Assert basic fact
-			if user.ID != id {
-				return fmt.Errorf("wanted user with ID %d but got %d", id, user.ID)
-			}
-
-			return err
-		})
-
-		if err != nil {
-			t.Fatalf("Error on Verify: %v", err)
-		}
 	})
 ```
 
@@ -300,28 +307,39 @@ Let's write a test for this scenario, and then generate an updated pact file.
 *consumer/client/client_pact_test.go*:
 ```go
 	t.Run("the user does not exist", func(t *testing.T) {
-		pact.
+		id := 10
+
+		err = mockProvider.
 			AddInteraction().
 			Given("User sally does not exist").
 			UponReceiving("A request to login with user 'sally'").
-			WithRequest(request{
-				Method:  "GET",
-				Path:    term("/user/10", "/user/[0-9]+"),
-				Headers: headersWithToken,
+			WithRequestPathMatcher("GET", Regex("/user/"+strconv.Itoa(id), "/user/[0-9]+"), func(b *consumer.V2RequestBuilder) {
+				b.Header("Authorization", Like("Bearer 2019-01-01"))
 			}).
-			WillRespondWith(dsl.Response{
-				Status:  404,
-				Headers: commonHeaders,
+			WillRespondWith(404, func(b *consumer.V2ResponseBuilder) {
+				b.Header("Content-Type", Term("application/json", `application\/json`)).
+					Header("X-Api-Correlation-Id", Like("100"))
+			}).
+			ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				// Act: test our API client behaves correctly
+
+				// Get the Pact mock server URL
+				u, _ = url.Parse("http://" + config.Host + ":" + strconv.Itoa(config.Port))
+
+				// Initialise the API client and point it at the Pact mock server
+				client = &Client{
+					BaseURL: u,
+				}
+
+				// // Execute the API client
+				_, err := client.WithToken("2019-01-01").GetUser(id)
+
+				return err
 			})
 
-		err := pact.Verify(func() error {
-			_, err := client.WithToken("2019-01-01").GetUser(10)
-
-			return err
-		})
-
 		assert.Equal(t, ErrNotFound, err)
-  })
+
+	})
 ```
 
 Notice that our new test looks almost identical to our previous test, and only differs on the expectations of the _response_ - the HTTP request expectations are exactly the same.
@@ -367,14 +385,14 @@ States are invoked prior to the actual test function is invoked. You can see the
 We're going to add handlers for our two states - when Sally does and does not exist.
 
 ```go
-var stateHandlers = types.StateHandlers{
-	"User sally exists": func() error {
+var stateHandlers = models.StateHandlers{
+	"User sally exists": func(setup bool, s models.ProviderState) (models.ProviderStateResponse, error) {
 		userRepository = sallyExists
-		return nil
+		return models.ProviderStateResponse{}, nil
 	},
-	"User sally does not exist": func() error {
+	"User sally does not exist": func(setup bool, s models.ProviderState) (models.ProviderStateResponse, error) {
 		userRepository = sallyDoesNotExist
-		return nil
+		return models.ProviderStateResponse{}, nil
 	},
 }
 ```
@@ -506,13 +524,13 @@ _NOTE_: We are not considering the `403` scenario in this example.
 Here is the request filter:
 
 ```go
-// Simulates the neeed to set a time-bound authorization token,
+// Simulates the need to set a time-bound authorization token,
 // such as an OAuth bearer token
 func fixBearerToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Only set the correct bearer token, if one was provided in the first place
 		if r.Header.Get("Authorization") != "" {
-			r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", getAuthToken()))
+			r.Header.Set("Authorization", getAuthToken())
 		}
 		next.ServeHTTP(w, r)
 	})
@@ -593,9 +611,13 @@ All we need to do for the provider is update where it finds its pacts, from loca
 		BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
 		BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),
 		PublishVerificationResults: true,
-		ProviderVersion:            "1.0.0",
+		ProviderVersion:            os.Getenv("VERSION_COMMIT"),
 		StateHandlers:              stateHandlers,
 		RequestFilter:              fixBearerToken,
+		BeforeEach: func() error {
+			userRepository = sallyExists
+			return nil
+		},
   })
 ```
 

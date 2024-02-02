@@ -50,7 +50,7 @@ func TestPactProvider(t *testing.T) {
 	}
 }
 
-// Simulates the neeed to set a time-bound authorization token,
+// Simulates the need to set a time-bound authorization token,
 // such as an OAuth bearer token
 func fixBearerToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

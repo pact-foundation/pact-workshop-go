@@ -35,28 +35,6 @@ var ArrayMinLike = matchers.ArrayMinLike
 type S = matchers.S
 type Map = matchers.MapMatcher
 
-// var commonHeaders = Map{
-// 	b.header("Content-Type":         Term("application/json", `application\/json`)).
-// 	b.header("X-Api-Correlation-Id": Like("100"))
-// }
-
-// var headersWithToken = Map{
-// 	"Authorization": Like("Bearer 2019-01-01"),
-// }
-
-// // Common test data
-// var pact dsl.Pact
-
-// func createPact() dsl.Pact {
-// 	return dsl.Pact{
-// 		Consumer: os.Getenv("CONSUMER_NAME"),
-// 		Provider: os.Getenv("PROVIDER_NAME"),
-// 		LogDir:   os.Getenv("LOG_DIR"),
-// 		PactDir:  os.Getenv("PACT_DIR"),
-// 		LogLevel: "INFO",
-// 	}
-// }
-
 var u *url.URL
 var client *Client
 
