@@ -55,7 +55,7 @@ We need to first create an HTTP client to make the calls to our provider service
 
 *NOTE*: even if the API client had been been graciously provided for us by our Provider Team, it doesn't mean that we shouldn't write contract tests - because the version of the client we have may not always be in sync with the deployed API - and also because we will write tests on the output appropriate to our specific needs.
 
-This User Service expects a `user` path parameter, and then returns some simple json back:
+This User Service expects a `users` path parameter, and then returns some simple json back:
 
 ![Sequence Diagram](diagrams/workshop_step1_class-sequence-diagram.png)
 
@@ -207,7 +207,7 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 ![Test using Pact](diagrams/workshop_step3_pact.png)
 
 
-This test starts a mock server a random port that acts as our provider service. To get this to work we update the URL in the `Client` that we create, after initialising Pact.
+This test starts a Pact mock server on a random port that acts as our provider service. . We can access the update the `config.Host` & `config.Port` from `consumer.MockServerConfig` in the `ExecuteTest` block and pass these into the `Client` that we create, after initialising Pact. Pact will ensure our client makes the request stated in the interaction.
 
 Running this test still passes, but it creates a pact file which we can use to validate our assumptions on the provider side, and have conversation around.
 
