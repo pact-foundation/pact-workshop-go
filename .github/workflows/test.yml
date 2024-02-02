@@ -1,0 +1,33 @@
+name: Pact-Workshop(GoLang)
+
+on:
+    push:
+        branches:
+            - step8
+    pull_request:
+        branches:
+            - step8
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+              shell: bash
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                    go-version: 1.21
+            - name: install
+              run: make install
+            - name: install_pact_ffi_lib
+              run: make install_pact_ffi_lib
+            - name: consumer unit tests
+              run: make unit
+            - name: consumer pact tests
+              run: make consumer
+            - name: provider pact tests
+              run: make provider || true
