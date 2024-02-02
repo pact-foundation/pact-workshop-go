@@ -3,10 +3,10 @@ name: Pact-Workshop(GoLang)
 on:
     push:
         branches:
-            - step2
+            - step1
     pull_request:
         branches:
-            - step2
+            - step1
 
 jobs:
     build:
