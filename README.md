@@ -443,7 +443,7 @@ go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/p
 
 *Move on to [step 9](//github.com/pact-foundation/pact-workshop-go/tree/step9)*
 
-## Step 9 - Implement authorisation on the provider
+## Step 9 - Implement authorization on the provider
 
 Like most tokens, our bearer token is going to be dependent on the date/time it was generated. For the purposes of our API, it's rather crude:
 
@@ -512,7 +512,7 @@ _NOTE_: This is an advanced concept and should be used carefully, as it has the 
 The approach we are going to take to inject the header is as follows:
 
 1. If we receive any Authorization header, we override the incoming request with a valid (in time) Authorization header, and continue with whatever call was being made
-1. If we don't recieve a header, we do nothing
+1. If we don't receive a header, we do nothing
 
 _NOTE_: We are not considering the `403` scenario in this example.
 
