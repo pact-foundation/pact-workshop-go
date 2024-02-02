@@ -605,7 +605,7 @@ All we need to do for the provider is update where it finds its pacts, from loca
 		FailIfNoPactsFound: false,
 		Verbose:            false,
 		// Use this if you want to test without the Pact Broker
-		// PactURLs:                   []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
+		// PactFiles:                   []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
 		BrokerURL:                  fmt.Sprintf("%s://%s", os.Getenv("PACT_BROKER_PROTO"), os.Getenv("PACT_BROKER_URL")),
 		BrokerUsername:             os.Getenv("PACT_BROKER_USERNAME"),
 		BrokerPassword:             os.Getenv("PACT_BROKER_PASSWORD"),
