@@ -46,7 +46,7 @@ func IsAuthenticated(h http.HandlerFunc) http.HandlerFunc {
 		if r.Header.Get("Authorization") == getAuthToken() {
 			h.ServeHTTP(w, r)
 		} else {
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 		}
 	}
@@ -54,7 +54,7 @@ func IsAuthenticated(h http.HandlerFunc) http.HandlerFunc {
 
 // GetUser fetches a user if authenticated and exists
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 
 	// Get username from path
 	a := strings.Split(r.URL.Path, "/")
@@ -72,7 +72,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 // GetUsers fetches all users
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	resBody, _ := json.Marshal(userRepository.GetUsers())
 	w.Write(resBody)

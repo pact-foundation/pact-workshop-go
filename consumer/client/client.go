@@ -19,7 +19,7 @@ type Client struct {
 	Token      string
 }
 
-// WithToken applies a token to the
+// WithToken applies a token to the outgoing request
 func (c *Client) WithToken(token string) *Client {
 	c.Token = token
 	return c

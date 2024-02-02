@@ -1,0 +1,55 @@
+name: Pact-Workshop(GoLang)
+
+on:
+    push:
+        branches:
+            - step11
+            - master
+    pull_request:
+        branches:
+            - step11
+            - master
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+              shell: bash
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                    go-version: 1.21
+            - name: install
+              run: make install
+            - name: install_pact_ffi_lib
+              run: make install_pact_ffi_lib
+            - name: consumer unit tests
+              run: make unit
+            - name: consumer pact tests
+              run: make consumer
+            - uses: KengoTODA/actions-setup-docker-compose@v1
+              if: ${{ env.ACT }}
+              name: Install `docker-compose` for use with act
+              with:
+                version: '2.24.1'
+            - name: start pact broker
+              run: make broker
+            - name: publish consumer pacts
+              run: make publish
+            - name: provider pact tests
+              run: make provider
+            - name: provider check safe to deploy
+              run: make deploy-provider
+            - name: provider record deployment
+              run: make record-deploy-provider
+            - name: consumer check safe to deploy
+              run: make record-deploy-consumer
+            - name: consumer check safe to deploy
+              run: make deploy-consumer
+            - name: consumer record deployment
+              run: make record-deploy-consumer
+
