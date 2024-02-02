@@ -1,7 +1,7 @@
 # Pact Go workshop
 
 ## Introduction
-This workshop is aimed at demonstrating core features and benefits of contract testing with Pact. It uses a simple example
+This workshop is aimed at demonstrating core features and benefits of contract testing with Pact.
 
 Whilst contract testing can be applied retrospectively to systems, we will follow the [consumer driven contracts](https://martinfowler.com/articles/consumerDrivenContracts.html) approach in this workshop - where a new consumer and provider are created in parallel to evolve a service over time, especially where there is some uncertainty with what is to be built.
 
@@ -36,11 +36,12 @@ There are two components in scope for our workshop.
 
 For the purposes of this workshop, we won't implement any functionality of the Admin Service, except the bits that require User information.
 
+**Project Structure**
 
 The key packages are shown below:
 
 ```sh
-├── consumer		  # Contains the Admin Service Team (client) project
+├── consumer	  # Contains the Admin Service Team (client) project
 ├── model         # Shared domain model
 ├── pact          # The directory of the Pact Standalone CLI
 ├── provider      # The User Service Team (provider) project
@@ -54,7 +55,7 @@ We need to first create an HTTP client to make the calls to our provider service
 
 *NOTE*: even if the API client had been been graciously provided for us by our Provider Team, it doesn't mean that we shouldn't write contract tests - because the version of the client we have may not always be in sync with the deployed API - and also because we will write tests on the output appropriate to our specific needs.
 
-This User Service expects a `user` path parameter, and then returns some simple json back:
+This User Service expects a `users` path parameter, and then returns some simple json back:
 
 ![Sequence Diagram](diagrams/workshop_step1_class-sequence-diagram.png)
 
@@ -91,7 +92,7 @@ func TestClientUnit_GetUser(t *testing.T) {
 
 	// Setup mock server
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		assert.Equal(t, req.URL.String(), fmt.Sprintf("/user/%d", userID))
+		assert.Equal(t, req.URL.String(), fmt.Sprintf("/users/%d", userID))
 		user, _ := json.Marshal(model.User{
 			FirstName: "Sally",
 			LastName:  "McDougall",
@@ -134,7 +135,7 @@ Meanwhile, our provider team has started building out their API in parallel. Let
 
 ```
 # Terminal 1
-$ make run-provider 
+$ make run-provider
 
 2019/10/28 18:24:37 API starting: port 8080 ([::]:8080)
 
@@ -163,34 +164,40 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 	t.Run("the user exists", func(t *testing.T) {
 		id := 10
 
-		pact.
+		err = mockProvider.
 			AddInteraction().
 			Given("User sally exists").
 			UponReceiving("A request to login with user 'sally'").
-			WithRequest(request{
-				Method:  "GET",
-				Path:    term("/users/10", "/user/[0-9]+"),
+			WithRequestPathMatcher("GET", Regex("/users/"+strconv.Itoa(id), "/users/[0-9]+")).
+			WillRespondWith(200, func(b *consumer.V2ResponseBuilder) {
+				b.BodyMatch(model.User{}).
+					Header("Content-Type", Term("application/json", `application\/json`)).
+					Header("X-Api-Correlation-Id", Like("100"))
 			}).
-			WillRespondWith(dsl.Response{
-				Status:  200,
-				Body:    dsl.Match(model.User{}),
-				Headers: commonHeaders,
+			ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				// Act: test our API client behaves correctly
+
+				// Get the Pact mock server URL
+				u, _ = url.Parse("http://" + config.Host + ":" + strconv.Itoa(config.Port))
+
+				// Initialise the API client and point it at the Pact mock server
+				client = &Client{
+					BaseURL: u,
+				}
+
+				// // Execute the API client
+				user, err := client.GetUser(id)
+
+				// // Assert basic fact
+				if user.ID != id {
+					return fmt.Errorf("wanted user with ID %d but got %d", id, user.ID)
+				}
+
+				return err
 			})
 
-		err := pact.Verify(func() error {
-			user, err := client.GetUser(id)
+		assert.NoError(t, err)
 
-			// Assert basic fact
-			if user.ID != id {
-				return fmt.Errorf("wanted user with ID %d but got %d", id, user.ID)
-			}
-
-			return err
-		})
-
-		if err != nil {
-			t.Fatalf("Error on Verify: %v", err)
-		}
 	})
 ```
 
@@ -198,7 +205,7 @@ Let us add Pact to the project and write a consumer pact test for the `GET /user
 ![Test using Pact](diagrams/workshop_step3_pact.png)
 
 
-This test starts a mock server a random port that acts as our provider service. To get this to work we update the URL in the `Client` that we create, after initialising Pact.
+This test starts a Pact mock server on a random port that acts as our provider service. . We can access the update the `config.Host` & `config.Port` from `consumer.MockServerConfig` in the `ExecuteTest` block and pass these into the `Client` that we create, after initialising Pact. Pact will ensure our client makes the request stated in the interaction.
 
 Running this test still passes, but it creates a pact file which we can use to validate our assumptions on the provider side, and have conversation around.
 
@@ -206,7 +213,7 @@ Running this test still passes, but it creates a pact file which we can use to v
 $ make consumer
 ```
 
-A pact file should have been generated in *pacts/goadminservice-gouserservice.json*
+A pact file should have been generated in *pacts/GoAdminService-GoUserService.json*
 
 *Move on to [step 4](//github.com/pact-foundation/pact-workshop-go/tree/step4)*
 
@@ -291,34 +298,42 @@ Move on to [step 6](//github.com/pact-foundation/pact-workshop-go/tree/step6)*
 
 ## Step 6 - Missing Users
 
-We're now going to add another scenario - what happens when we make a call for a user that doesn't exist? We assume we'll get a `404`, because that is the obvious thing to do. 
+We're now going to add another scenario - what happens when we make a call for a user that doesn't exist? We assume we'll get a `404`, because that is the obvious thing to do.
 
 Let's write a test for this scenario, and then generate an updated pact file.
 
 *consumer/client/client_pact_test.go*:
 ```go
 	t.Run("the user does not exist", func(t *testing.T) {
-		pact.
+		id := 10
+
+		err = mockProvider.
 			AddInteraction().
 			Given("User sally does not exist").
 			UponReceiving("A request to login with user 'sally'").
-			WithRequest(request{
-				Method:  "GET",
-				Path:    term("/user/10", "/user/[0-9]+"),
+			WithRequestPathMatcher("GET", Regex("/user/"+strconv.Itoa(id), "/user/[0-9]+")).
+			WillRespondWith(404, func(b *consumer.V2ResponseBuilder) {
+				b.Header("Content-Type", Term("application/json", `application\/json`)).
+					Header("X-Api-Correlation-Id", Like("100"))
 			}).
-			WillRespondWith(dsl.Response{
-				Status:  404,
-				Headers: commonHeaders,
+			ExecuteTest(t, func(config consumer.MockServerConfig) error {
+				// Act: test our API client behaves correctly
+
+				// Get the Pact mock server URL
+				u, _ = url.Parse("http://" + config.Host + ":" + strconv.Itoa(config.Port))
+
+				// Initialise the API client and point it at the Pact mock server
+				client = &Client{
+					BaseURL: u,
+				}
+
+				// // Execute the API client
+				_, err := client.GetUser(id)
+				assert.Equal(t, ErrNotFound, err)
+				return nil
 			})
-
-		err := pact.Verify(func() error {
-			_, err := client.GetUser(10)
-
-			return err
-		})
-
-		assert.Equal(t, ErrNotFound, err)
-  })
+			assert.NoError(t, err)
+	})
 ```
 
 Notice that our new test looks almost identical to our previous test, and only differs on the expectations of the _response_ - the HTTP request expectations are exactly the same.
@@ -364,14 +379,14 @@ States are invoked prior to the actual test function is invoked. You can see the
 We're going to add handlers for our two states - when Sally does and does not exist.
 
 ```go
-var stateHandlers = types.StateHandlers{
-	"User sally exists": func() error {
+var stateHandlers = models.StateHandlers{
+	"User sally exists": func(setup bool, s models.ProviderState) (models.ProviderStateResponse, error) {
 		userRepository = sallyExists
-		return nil
+		return models.ProviderStateResponse{}, nil
 	},
-	"User sally does not exist": func() error {
+	"User sally does not exist": func(setup bool, s models.ProviderState) (models.ProviderStateResponse, error) {
 		userRepository = sallyDoesNotExist
-		return nil
+		return models.ProviderStateResponse{}, nil
 	},
 }
 ```
