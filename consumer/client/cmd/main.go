@@ -8,7 +8,7 @@ import (
 	"github.com/pact-foundation/pact-workshop-go/consumer/client"
 )
 
-var token = time.Now().Format("2006-01-02")
+var token = time.Now().Format("2006-01-02T15:04")
 
 func main() {
 	u, _ := url.Parse("http://localhost:8080")
