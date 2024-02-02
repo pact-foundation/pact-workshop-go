@@ -2,33 +2,37 @@ package provider
 
 import (
 	"fmt"
-	"log"
+	l "log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/pact-foundation/pact-go/dsl"
-	"github.com/pact-foundation/pact-go/types"
-	"github.com/pact-foundation/pact-go/utils"
+	"github.com/pact-foundation/pact-go/v2/log"
+	"github.com/pact-foundation/pact-go/v2/models"
+	"github.com/pact-foundation/pact-go/v2/provider"
+	"github.com/pact-foundation/pact-go/v2/utils"
 	"github.com/pact-foundation/pact-workshop-go/model"
 	"github.com/pact-foundation/pact-workshop-go/provider/repository"
 )
 
 // The Provider verification
 func TestPactProvider(t *testing.T) {
+	log.SetLogLevel("INFO")
+
 	go startInstrumentedProvider()
 
-	pact := createPact()
+	verifier := provider.NewVerifier()
 
-	// Verify the Provider - Tag-based Published Pacts for any known consumers
-	_, err := pact.VerifyProvider(t, types.VerifyRequest{
+	// Verify the Provider - Branch-based Published Pacts for any known consumers
+	err := verifier.VerifyProvider(t, provider.VerifyRequest{
+		Provider:           "GoUserService",
 		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
-		Tags:               []string{"master"},
+		ProviderBranch:     os.Getenv("VERSION_BRANCH"),
 		FailIfNoPactsFound: false,
 		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
-		ProviderVersion:    "1.0.0",
+		ProviderVersion:    os.Getenv("VERSION_COMMIT"),
 		StateHandlers:      stateHandlers,
 		RequestFilter:      fixBearerToken,
 		BeforeEach: func() error {
@@ -42,7 +46,7 @@ func TestPactProvider(t *testing.T) {
 	}
 }
 
-// Simulates the neeed to set a time-bound authorization token,
+// Simulates the need to set a time-bound authorization token,
 // such as an OAuth bearer token
 func fixBearerToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -54,14 +58,14 @@ func fixBearerToken(next http.Handler) http.Handler {
 	})
 }
 
-var stateHandlers = types.StateHandlers{
-	"User sally exists": func() error {
+var stateHandlers = models.StateHandlers{
+	"User sally exists": func(setup bool, s models.ProviderState) (models.ProviderStateResponse, error) {
 		userRepository = sallyExists
-		return nil
+		return models.ProviderStateResponse{}, nil
 	},
-	"User sally does not exist": func() error {
+	"User sally does not exist": func(setup bool, s models.ProviderState) (models.ProviderStateResponse, error) {
 		userRepository = sallyDoesNotExist
-		return nil
+		return models.ProviderStateResponse{}, nil
 	},
 }
 
@@ -72,12 +76,12 @@ func startInstrumentedProvider() {
 
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatal(err)
+		l.Fatal(err)
 	}
 	defer ln.Close()
 
-	log.Printf("API starting: port %d (%s)", port, ln.Addr())
-	log.Printf("API terminating: %v", http.Serve(ln, mux))
+	l.Printf("API starting: port %d (%s)", port, ln.Addr())
+	l.Printf("API terminating: %v", http.Serve(ln, mux))
 
 }
 
@@ -112,13 +116,4 @@ var sallyUnauthorized = &repository.UserRepository{
 			ID:        10,
 		},
 	},
-}
-
-// Setup the Pact client.
-func createPact() dsl.Pact {
-	return dsl.Pact{
-		Provider: "GoUserService",
-		LogDir:   logDir,
-		LogLevel: "INFO",
-	}
 }
