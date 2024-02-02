@@ -24,7 +24,6 @@ var userRepository = &repository.UserRepository{
 	},
 }
 
-// IsAuthenticated checks for a correct bearer token
 func WithCorrelationID(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		uuid := uuid.New()
