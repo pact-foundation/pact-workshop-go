@@ -333,11 +333,10 @@ Let's write a test for this scenario, and then generate an updated pact file.
 
 				// // Execute the API client
 				_, err := client.WithToken("2019-01-01").GetUser(id)
-
-				return err
+				assert.Equal(t, ErrNotFound, err)
+				return nil
 			})
-
-		assert.Equal(t, ErrNotFound, err)
+		assert.NoError(t, err)
 
 	})
 ```

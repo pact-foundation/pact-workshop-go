@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package client
 
@@ -117,11 +116,10 @@ func TestClientPact_GetUser(t *testing.T) {
 
 				// // Execute the API client
 				_, err := client.WithToken("2019-01-01").GetUser(id)
-
-				return err
+				assert.Equal(t, ErrNotFound, err)
+				return nil
 			})
-
-		assert.Equal(t, ErrNotFound, err)
+		assert.NoError(t, err)
 
 	})
 	t.Run("not authenticated", func(t *testing.T) {
@@ -149,12 +147,10 @@ func TestClientPact_GetUser(t *testing.T) {
 
 				// // Execute the API client
 				_, err := client.WithToken("").GetUser(id)
-
-				return err
+				assert.Equal(t, ErrUnauthorized, err)
+				return nil
 			})
-
-		assert.Equal(t, ErrUnauthorized, err)
-
+		assert.NoError(t, err)
 	})
 
 }
