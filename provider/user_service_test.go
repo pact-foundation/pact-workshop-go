@@ -19,7 +19,7 @@ import (
 
 // The Provider verification
 func TestPactProvider(t *testing.T) {
-	log.SetLogLevel("INFO")
+	log.SetLogLevel("DEBUG")
 
 	go startInstrumentedProvider()
 
@@ -31,7 +31,7 @@ func TestPactProvider(t *testing.T) {
 		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
 		ProviderBranch:     os.Getenv("VERSION_BRANCH"),
 		FailIfNoPactsFound: false,
-		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
+		PactFiles:          []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
 		ProviderVersion:    os.Getenv("VERSION_COMMIT"),
 		StateHandlers:      stateHandlers,
 		RequestFilter:      fixBearerToken,
@@ -86,15 +86,12 @@ func startInstrumentedProvider() {
 }
 
 // Configuration / Test Data
-var dir, _ = os.Getwd()
-var pactDir = fmt.Sprintf("%s/../../pacts", dir)
-var logDir = fmt.Sprintf("%s/log", dir)
 var port, _ = utils.GetFreePort()
 
 // Provider States data sets
 var sallyExists = &repository.UserRepository{
 	Users: map[string]*model.User{
-		"sally": &model.User{
+		"sally": {
 			FirstName: "Jean-Marie",
 			LastName:  "de La Beaujardière😀😍",
 			Username:  "sally",
@@ -108,7 +105,7 @@ var sallyDoesNotExist = &repository.UserRepository{}
 
 var sallyUnauthorized = &repository.UserRepository{
 	Users: map[string]*model.User{
-		"sally": &model.User{
+		"sally": {
 			FirstName: "Jean-Marie",
 			LastName:  "de La Beaujardière😀😍",
 			Username:  "sally",
