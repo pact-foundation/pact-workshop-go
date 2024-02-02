@@ -31,7 +31,7 @@ func TestPactProvider(t *testing.T) {
 		ProviderBaseURL:    fmt.Sprintf("http://127.0.0.1:%d", port),
 		ProviderBranch:     os.Getenv("VERSION_BRANCH"),
 		FailIfNoPactsFound: false,
-		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/goadminservice-gouserservice.json", os.Getenv("PACT_DIR")))},
+		PactURLs:           []string{filepath.FromSlash(fmt.Sprintf("%s/GoAdminService-GoUserService.json", os.Getenv("PACT_DIR")))},
 		ProviderVersion:    os.Getenv("VERSION_COMMIT"),
 		StateHandlers:      stateHandlers,
 		RequestFilter:      fixBearerToken,

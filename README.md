@@ -215,7 +215,7 @@ Running this test still passes, but it creates a pact file which we can use to v
 $ make consumer
 ```
 
-A pact file should have been generated in *pacts/goadminservice-gouserservice.json*
+A pact file should have been generated in *pacts/GoAdminService-GoUserService.json*
 
 *Move on to [step 4](//github.com/pact-foundation/pact-workshop-go/tree/step4)*
 
