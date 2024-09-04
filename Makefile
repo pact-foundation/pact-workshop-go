@@ -1,5 +1,6 @@
 include ./make/config.mk
 
+PACT_GO_VERSION=2.0.8
 PACT_DOWNLOAD_DIR=/tmp
 ifeq ($(OS),Windows_NT)
 	PACT_DOWNLOAD_DIR=$$TMP
@@ -12,7 +13,7 @@ install_cli:
     fi
 
 install:
-	go install github.com/pact-foundation/pact-go/v2
+	go install github.com/pact-foundation/pact-go/v2@v$(PACT_GO_VERSION)
 	pact-go -l DEBUG install --libDir $(PACT_DOWNLOAD_DIR);
 
 run-consumer:
