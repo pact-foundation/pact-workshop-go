@@ -610,9 +610,32 @@ In the case a valid bearer token is not provided, we expect a `401`. Let's updat
 ```
 $ make consumer
 
---- 🔨Running Consumer Pact tests
-go test github.com/pact-foundation/pact-workshop-go/consumer/client -run '^TestClientPact'
-ok  	github.com/pact-foundation/pact-workshop-go/consumer/client	21.983s
+--- 🔨Running Consumer Pact tests 
+go test -tags=integration -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact' -v
+=== RUN   TestClientPact_GetUser
+=== RUN   TestClientPact_GetUser/the_user_exists
+2024-09-04T17:26:31.517409Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Received request GET /user/10
+2024-09-04T17:26:31.518833Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Request matched, sending response
+2024-09-04T17:26:31.520040Z  INFO ThreadId(02) pact_mock_server::mock_server: Writing pact out to '/Users/yousaf.nabi/dev/pact-foundation/pact-workshop-go/pacts/GoAdminService-GoUserService.json'
+2024/09/04 18:26:31 [ERROR] failed to log to stdout: can't set logger (applying the logger failed, perhaps because one is applied already).
+=== RUN   TestClientPact_GetUser/the_user_does_not_exist
+2024-09-04T17:26:31.522280Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Received request GET /user/10
+2024-09-04T17:26:31.522377Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Request matched, sending response
+2024-09-04T17:26:31.522601Z  INFO ThreadId(03) pact_mock_server::mock_server: Writing pact out to '/Users/yousaf.nabi/dev/pact-foundation/pact-workshop-go/pacts/GoAdminService-GoUserService.json'
+2024-09-04T17:26:31.522966Z  WARN ThreadId(03) pact_models::pact: Note: Existing pact is an older specification version (V2), and will be upgraded
+2024/09/04 18:26:31 [ERROR] failed to log to stdout: can't set logger (applying the logger failed, perhaps because one is applied already).
+=== RUN   TestClientPact_GetUser/not_authenticated
+2024-09-04T17:26:31.524071Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Received request GET /user/10
+2024-09-04T17:26:31.524138Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Request matched, sending response
+2024-09-04T17:26:31.524262Z  INFO ThreadId(02) pact_mock_server::mock_server: Writing pact out to '/Users/yousaf.nabi/dev/pact-foundation/pact-workshop-go/pacts/GoAdminService-GoUserService.json'
+2024-09-04T17:26:31.524448Z  WARN ThreadId(02) pact_models::pact: Note: Existing pact is an older specification version (V2), and will be upgraded
+2024/09/04 18:26:31 [ERROR] failed to log to stdout: can't set logger (applying the logger failed, perhaps because one is applied already).
+--- PASS: TestClientPact_GetUser (0.03s)
+    --- PASS: TestClientPact_GetUser/the_user_exists (0.02s)
+    --- PASS: TestClientPact_GetUser/the_user_does_not_exist (0.00s)
+    --- PASS: TestClientPact_GetUser/not_authenticated (0.00s)
+PASS
+ok      github.com/pact-foundation/pact-workshop-go/consumer/client     0.473s
 ```
 
 We should now have two interactions in our pact file.
@@ -622,19 +645,91 @@ Our verification now fails, as our consumer is sending a Bearer token that is no
 ```
 $ make provider
 
---- 🔨Running Provider Pact tests
-go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
-2019/10/30 13:28:47 API starting: port 63875 ([::]:63875)
-2019/10/30 13:28:59 [WARN] state handler not found for state:
---- FAIL: TestPactProvider (11.54s)
-    pact.go:416: Verifying a pact between GoAdminService and GoUserService A request to login with user 'sally' with GET /user/10 returns a response which has status code 401
+--- 🔨Running Provider Pact tests 
+go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider" -v
+=== RUN   TestPactProvider
+2024/09/04 18:26:33 API starting: port 53171 ([::]:53171)
+2024-09-04T17:26:33.691144Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User is not authenticated' for 'A request to login with user 'sally''
+2024/09/04 18:26:33 [INFO] executing state handler middleware
+2024/09/04 18:26:33 [WARN] no state handler found for state: User is not authenticated
+2024-09-04T17:26:33.862810Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:26:33.862914Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53174/
+2024-09-04T17:26:33.862919Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: None, body: Missing )
+2024-09-04T17:26:33.863928Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 200, headers: Some({"x-api-correlation-id": ["df1e249c-ef86-4951-89cc-b36a865406b9"], "content-length": ["109"], "content-type": ["application/json"], "date": ["Wed, 04 Sep 2024 17:26:33 GMT"]}), body: Present(109 bytes, application/json) )
+2024-09-04T17:26:33.864168Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User is not authenticated' for 'A request to login with user 'sally''
+2024/09/04 18:26:34 [INFO] executing state handler middleware
+2024/09/04 18:26:34 [WARN] no state handler found for state: User is not authenticated
+2024-09-04T17:26:34.166077Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally does not exist' for 'A request to login with user 'sally''
+2024/09/04 18:26:34 [INFO] executing state handler middleware
+2024-09-04T17:26:34.321688Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:26:34.321728Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53174/
+2024-09-04T17:26:34.321731Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: Some({"Authorization": ["Bearer 2019-01-01"]}), body: Missing )
+2024-09-04T17:26:34.322490Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 404, headers: Some({"content-type": ["application/json"], "date": ["Wed, 04 Sep 2024 17:26:34 GMT"], "content-length": ["0"], "x-api-correlation-id": ["4f721ba2-d17f-4111-8652-6176f03db0c9"]}), body: Empty )
+2024-09-04T17:26:34.322607Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User sally does not exist' for 'A request to login with user 'sally''
+2024/09/04 18:26:34 [INFO] executing state handler middleware
+2024-09-04T17:26:34.643400Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024/09/04 18:26:34 [INFO] executing state handler middleware
+2024-09-04T17:26:34.848872Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:26:34.848925Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53174/
+2024-09-04T17:26:34.848928Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: Some({"Authorization": ["Bearer 2019-01-01"]}), body: Missing )
+2024-09-04T17:26:34.849747Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 200, headers: Some({"content-type": ["application/json"], "content-length": ["109"], "date": ["Wed, 04 Sep 2024 17:26:34 GMT"], "x-api-correlation-id": ["56978492-00c2-4f75-9697-d885caa660a0"]}), body: Present(109 bytes, application/json) )
+2024-09-04T17:26:34.850493Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024/09/04 18:26:35 [INFO] executing state handler middleware
+2024-09-04T17:26:35.004331Z  WARN ThreadId(11) pact_matching::metrics: 
 
-        expected: 401
-             got: 200
+Please note:
+We are tracking events anonymously to gather important usage statistics like Pact version and operating system. To disable tracking, set the 'PACT_DO_NOT_TRACK' environment variable to 'true'.
 
-        (compared using eql?)
 
-    user_service_test.go:43: error verifying provider: exit status 1
+
+Verifying a pact between GoAdminService and GoUserService
+
+  A request to login with user 'sally' (0s loading, 498ms verification)
+     Given User is not authenticated
+    returns a response which
+      has status code 401 (FAILED)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+  A request to login with user 'sally' (0s loading, 478ms verification)
+     Given User sally does not exist
+    returns a response which
+      has status code 404 (OK)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+  A request to login with user 'sally' (0s loading, 511ms verification)
+     Given User sally exists
+    returns a response which
+      has status code 200 (OK)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+
+Failures:
+
+1) Verifying a pact between GoAdminService and GoUserService Given User is not authenticated - A request to login with user 'sally'
+    1.1) has status code 401
+           expected 401 but was 200
+
+There were 1 pact failures
+
+=== RUN   TestPactProvider/Provider_pact_verification
+    verifier.go:183: the verifier failed to successfully verify the pacts, this indicates an issue with the provider API
+=== NAME  TestPactProvider
+    user_service_test.go:44: the verifier failed to successfully verify the pacts, this indicates an issue with the provider API
+--- FAIL: TestPactProvider (1.80s)
+    --- FAIL: TestPactProvider/Provider_pact_verification (0.00s)
+FAIL
+FAIL    github.com/pact-foundation/pact-workshop-go/provider    2.291s
+FAIL
+make: *** [provider] Error 1
 ```
 
 *Move on to [step 9](//github.com/pact-foundation/pact-workshop-go/tree/step9)*
