@@ -76,12 +76,12 @@ unit:
 consumer: export PACT_TEST := true
 consumer:
 	@echo "--- 🔨Running Consumer Pact tests "
-	go test -tags=integration -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact'
+	go test -tags=integration -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact' -v
 
 provider: export PACT_TEST := true
 provider:
 	@echo "--- 🔨Running Provider Pact tests "
-	go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
+	go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider" -v
 
 broker:
 	docker compose up -d
