@@ -322,19 +322,55 @@ Move on to [step 5](//github.com/pact-foundation/pact-workshop-go/tree/step5)*
 Let's update the consumer test and client to hit the correct path, and run the provider verification also:
 
 ```
-$ make consumer
-
---- 🔨Running Consumer Pact tests
-go test github.com/pact-foundation/pact-workshop-go/consumer/client -run '^TestClientPact'
-ok  	github.com/pact-foundation/pact-workshop-go/consumer/client	21.983s
+--- 🔨Running Consumer Pact tests 
+go test -tags=integration -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact' -v
+=== RUN   TestClientPact_GetUser
+=== RUN   TestClientPact_GetUser/the_user_exists
+2024-09-04T17:06:51.261564Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Received request GET /user/10
+2024-09-04T17:06:51.262470Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Request matched, sending response
+2024-09-04T17:06:51.263240Z  INFO ThreadId(02) pact_mock_server::mock_server: Writing pact out to '/Users/yousaf.nabi/dev/pact-foundation/pact-workshop-go/pacts/GoAdminService-GoUserService.json'
+2024/09/04 18:06:51 [ERROR] failed to log to stdout: can't set logger (applying the logger failed, perhaps because one is applied already).
+--- PASS: TestClientPact_GetUser (0.02s)
+    --- PASS: TestClientPact_GetUser/the_user_exists (0.02s)
+PASS
+ok      github.com/pact-foundation/pact-workshop-go/consumer/client     0.071s
 ```
 
 ```
-$ make provider
+--- 🔨Running Provider Pact tests 
+go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider" -v
+=== RUN   TestPactProvider
+2024/09/04 18:05:44 API starting: port 52781 ([::]:52781)
+2024-09-04T17:05:45.133153Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024-09-04T17:05:45.133206Z  WARN ThreadId(11) pact_verifier::callback_executors: State Change ignored as there is no state change URL provided for interaction 
+2024-09-04T17:05:45.133232Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:05:45.133294Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:52784/
+2024-09-04T17:05:45.133297Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: None, body: Missing )
+2024-09-04T17:05:45.136291Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 200, headers: Some({"date": ["Wed, 04 Sep 2024 17:05:45 GMT"], "content-length": ["109"], "content-type": ["application/json"], "x-api-correlation-id": ["1c0fa3a9-ebb7-4c21-ab01-345b882d0dc4"]}), body: Present(109 bytes, application/json) )
+2024-09-04T17:05:45.137119Z  WARN ThreadId(11) pact_matching::metrics: 
 
---- 🔨Running Provider Pact tests
-go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
-ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
+Please note:
+We are tracking events anonymously to gather important usage statistics like Pact version and operating system. To disable tracking, set the 'PACT_DO_NOT_TRACK' environment variable to 'true'.
+
+
+
+Verifying a pact between GoAdminService and GoUserService
+
+  A request to login with user 'sally' (0s loading, 166ms verification)
+     Given User sally exists
+    returns a response which
+      has status code 200 (OK)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+
+=== RUN   TestPactProvider/Provider_pact_verification
+--- PASS: TestPactProvider (0.48s)
+    --- PASS: TestPactProvider/Provider_pact_verification (0.00s)
+PASS
+ok      github.com/pact-foundation/pact-workshop-go/provider    0.532s
 ```
 
 Yay - green ✅!
