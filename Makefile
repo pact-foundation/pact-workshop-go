@@ -79,5 +79,5 @@ provider: install
 	go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
 
 broker:
-	docker-compose up -d
+	docker compose up -d
 .PHONY: install deploy-consumer deploy-provider publish unit consumer provider

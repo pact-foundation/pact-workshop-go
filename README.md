@@ -554,12 +554,12 @@ Using a broker simplifies the management of pacts and adds a number of useful fe
 
 In this workshop we will be using the open source Pact broker.
 
-### Running the Pact Broker with docker-compose
+### Running the Pact Broker with docker compose
 
 In the root directory, run:
 
 ```console
-docker-compose up
+docker compose up
 ```
 
 
