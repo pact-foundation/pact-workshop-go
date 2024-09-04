@@ -546,7 +546,7 @@ _NOTE_: This is an advanced concept and should be used carefully, as it has the 
 The approach we are going to take to inject the header is as follows:
 
 1. If we receive any Authorization header, we override the incoming request with a valid (in time) Authorization header, and continue with whatever call was being made
-1. If we don't recieve a header, we do nothing
+1. If we don't receive a header, we do nothing
 
 _NOTE_: We are not considering the `403` scenario in this example.
 
