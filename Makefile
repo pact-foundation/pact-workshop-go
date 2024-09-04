@@ -7,7 +7,7 @@ install:
     fi
 
 install_pact_ffi_lib:
-	go install github.com/pact-foundation/pact-go/v2@2.x.x
+	go install github.com/pact-foundation/pact-go/v2
 	sudo mkdir -p /usr/local/lib/
 	sudo $$HOME/go/bin/pact-go -l DEBUG install
 
