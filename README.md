@@ -156,7 +156,41 @@ We need to have a conversation about what the endpoint should be, but first...
 
 ## Step 3 - Pact to the rescue
 
-Let us add Pact to the project and write a consumer pact test for the `GET /users/:id` endpoint. Note how similar it looks to our unit test:
+Let's add Pact to the project. It comes in two parts.
+
+- Installing pact-go cli
+  - Required to install pact-go system libraries
+- Adding pact-go as a dev dependency to your project.
+
+Always check the installation instructions in the [docs](https://github.com/pact-foundation/pact-go/tree/master?tab=readme-ov-file#installation) for your platform.
+
+The following command will install the pact-go CLI tool.
+
+```console
+$ go install github.com/pact-foundation/pact-go/v2
+```
+
+and we will use the pact-go CLI tool to install system libraries required by pact-go
+
+```console
+$ pact-go -l DEBUG install
+```
+
+You can use the provided make command to do this for you.
+
+```console
+$ make install
+```
+
+You can add `pact-go` to your project with the following
+
+```console
+$ go get github.com/pact-foundation/pact-go/v2
+```
+
+We can now write a consumer pact test for the `GET /users/:id` endpoint. 
+
+Note how similar it looks to our unit test:
 
 *consumer/client/client_pact_test.go:*
 
