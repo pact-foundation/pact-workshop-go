@@ -771,23 +771,96 @@ Let's test this out:
 $ make provider
 
 --- 🔨Running Provider Pact tests
-go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
-2019/10/30 14:08:11 API starting: port 64214 ([::]:64214)
-2019/10/30 14:08:22 [WARN] state handler not found for state: User is not authenticated
---- FAIL: TestPactProvider (11.55s)
-    pact.go:416: Verifying a pact between GoAdminService and GoUserService Given User sally exists A request to login with user 'sally' with GET /user/10 returns a response which has status code 200
+--- 🔨Running Provider Pact tests 
+go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider" -v
+=== RUN   TestPactProvider
+2024/09/04 18:33:24 API starting: port 53320 ([::]:53320)
+2024-09-04T17:33:24.470513Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User is not authenticated' for 'A request to login with user 'sally''
+2024/09/04 18:33:24 [INFO] executing state handler middleware
+2024/09/04 18:33:24 [WARN] no state handler found for state: User is not authenticated
+2024-09-04T17:33:24.628543Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:33:24.628943Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53323/
+2024-09-04T17:33:24.628947Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: None, body: Missing )
+2024-09-04T17:33:24.629996Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 401, headers: Some({"content-type": ["application/json"], "content-length": ["0"], "date": ["Wed, 04 Sep 2024 17:33:24 GMT"], "x-api-correlation-id": ["412a28a3-b08f-4fce-b97d-65a9f90fe180"]}), body: Empty )
+2024-09-04T17:33:24.630616Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User is not authenticated' for 'A request to login with user 'sally''
+2024/09/04 18:33:24 [INFO] executing state handler middleware
+2024/09/04 18:33:24 [WARN] no state handler found for state: User is not authenticated
+2024-09-04T17:33:24.932360Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally does not exist' for 'A request to login with user 'sally''
+2024/09/04 18:33:25 [INFO] executing state handler middleware
+2024-09-04T17:33:25.085895Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:33:25.085991Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53323/
+2024-09-04T17:33:25.085999Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: Some({"Authorization": ["Bearer 2019-01-01"]}), body: Missing )
+2024-09-04T17:33:25.086912Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 401, headers: Some({"content-length": ["0"], "content-type": ["application/json"], "date": ["Wed, 04 Sep 2024 17:33:25 GMT"], "x-api-correlation-id": ["0fab9b01-3710-49a7-9a57-d826cc79ee4f"]}), body: Empty )
+2024-09-04T17:33:25.087072Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User sally does not exist' for 'A request to login with user 'sally''
+2024/09/04 18:33:25 [INFO] executing state handler middleware
+2024-09-04T17:33:25.387705Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024/09/04 18:33:25 [INFO] executing state handler middleware
+2024-09-04T17:33:25.535975Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:33:25.536019Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53323/
+2024-09-04T17:33:25.536021Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: Some({"Authorization": ["Bearer 2019-01-01"]}), body: Missing )
+2024-09-04T17:33:25.536676Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 401, headers: Some({"date": ["Wed, 04 Sep 2024 17:33:25 GMT"], "content-length": ["0"], "content-type": ["application/json"], "x-api-correlation-id": ["e6e7fc30-7fed-4b75-9294-c189890c7443"]}), body: Empty )
+2024-09-04T17:33:25.536793Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024/09/04 18:33:25 [INFO] executing state handler middleware
+2024-09-04T17:33:25.690099Z  WARN ThreadId(11) pact_matching::metrics: 
 
-        expected: 200
-             got: 401
+Please note:
+We are tracking events anonymously to gather important usage statistics like Pact version and operating system. To disable tracking, set the 'PACT_DO_NOT_TRACK' environment variable to 'true'.
 
-        (compared using eql?)
 
-    pact.go:416: Verifying a pact between GoAdminService and GoUserService Given User sally exists A request to login with user 'sally' with GET /user/10 returns a response which has a matching body
-        757: unexpected token at 'null'
-    pact.go:416: Verifying a pact between GoAdminService and GoUserService Given User sally does not exist A request to login with user 'sally' with GET /user/10 returns a response which has status code 404
 
-        expected: 404
-             got: 401
+Verifying a pact between GoAdminService and GoUserService
+
+  A request to login with user 'sally' (0s loading, 492ms verification)
+     Given User is not authenticated
+    returns a response which
+      has status code 401 (OK)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+  A request to login with user 'sally' (0s loading, 454ms verification)
+     Given User sally does not exist
+    returns a response which
+      has status code 404 (FAILED)
+      includes headers
+        "Content-Type" with value "application/json" (OK)
+        "X-Api-Correlation-Id" with value "100" (OK)
+      has a matching body (OK)
+
+  A request to login with user 'sally' (0s loading, 449ms verification)
+     Given User sally exists
+    returns a response which
+      has status code 200 (FAILED)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (FAILED)
+
+
+Failures:
+
+1) Verifying a pact between GoAdminService and GoUserService Given User sally does not exist - A request to login with user 'sally'
+    1.1) has status code 404
+           expected 404 but was 401
+2) Verifying a pact between GoAdminService and GoUserService Given User sally exists - A request to login with user 'sally'
+    2.1) has a matching body
+           / -> Expected body Present(98 bytes) but was empty
+    2.2) has status code 200
+           expected 200 but was 401
+
+There were 2 pact failures
+
+=== RUN   TestPactProvider/Provider_pact_verification
+    verifier.go:183: the verifier failed to successfully verify the pacts, this indicates an issue with the provider API
+=== NAME  TestPactProvider
+    user_service_test.go:44: the verifier failed to successfully verify the pacts, this indicates an issue with the provider API
+--- FAIL: TestPactProvider (1.74s)
+    --- FAIL: TestPactProvider/Provider_pact_verification (0.00s)
+FAIL
+FAIL    github.com/pact-foundation/pact-workshop-go/provider    2.247s
+FAIL
+make: *** [provider] Error 1
 ```
 
 Oh, dear. _Both_ tests are now failing. Can you understand why?
