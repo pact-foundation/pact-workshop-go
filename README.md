@@ -422,28 +422,95 @@ Notice that our new test looks almost identical to our previous test, and only d
 ```
 $ make consumer
 
-go test github.com/pact-foundation/pact-workshop-go/consumer/client -run '^TestClientPact'
-ok  	github.com/pact-foundation/pact-workshop-go/consumer/client	21.983s
+--- 🔨Running Consumer Pact tests 
+go test -tags=integration -count=1 github.com/pact-foundation/pact-workshop-go/consumer/client -run 'TestClientPact' -v
+=== RUN   TestClientPact_GetUser
+=== RUN   TestClientPact_GetUser/the_user_exists
+2024-09-04T17:16:13.099939Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Received request GET /user/10
+2024-09-04T17:16:13.101062Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Request matched, sending response
+2024-09-04T17:16:13.101942Z  INFO ThreadId(02) pact_mock_server::mock_server: Writing pact out to '/Users/yousaf.nabi/dev/pact-foundation/pact-workshop-go/pacts/GoAdminService-GoUserService.json'
+2024/09/04 18:16:13 [ERROR] failed to log to stdout: can't set logger (applying the logger failed, perhaps because one is applied already).
+=== RUN   TestClientPact_GetUser/the_user_does_not_exist
+2024-09-04T17:16:13.104166Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Received request GET /user/10
+2024-09-04T17:16:13.104236Z  INFO tokio-runtime-worker pact_mock_server::hyper_server: Request matched, sending response
+2024-09-04T17:16:13.104504Z  INFO ThreadId(03) pact_mock_server::mock_server: Writing pact out to '/Users/yousaf.nabi/dev/pact-foundation/pact-workshop-go/pacts/GoAdminService-GoUserService.json'
+2024-09-04T17:16:13.104923Z  WARN ThreadId(03) pact_models::pact: Note: Existing pact is an older specification version (V2), and will be upgraded
+2024/09/04 18:16:13 [ERROR] failed to log to stdout: can't set logger (applying the logger failed, perhaps because one is applied already).
+--- PASS: TestClientPact_GetUser (0.03s)
+    --- PASS: TestClientPact_GetUser/the_user_exists (0.02s)
+    --- PASS: TestClientPact_GetUser/the_user_does_not_exist (0.00s)
+PASS
+ok      github.com/pact-foundation/pact-workshop-go/consumer/client     0.495s
 ```
 
 What does our provider have to say about this new test:
 
 ```
---- 🔨Running Provider Pact tests
-go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
-2019/10/30 13:46:32 API starting: port 64046 ([::]:64046)
---- FAIL: TestPactProvider (11.56s)
-    pact.go:416: Verifying a pact between GoAdminService and GoUserService Given User sally does not exist A request to login with user 'sally' with GET /user/10 returns a response which has status code 404
+--- 🔨Running Provider Pact tests 
+go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider" -v
+=== RUN   TestPactProvider
+2024/09/04 18:16:16 API starting: port 52955 ([::]:52955)
+2024-09-04T17:16:17.050635Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally does not exist' for 'A request to login with user 'sally''
+2024-09-04T17:16:17.050689Z  WARN ThreadId(11) pact_verifier::callback_executors: State Change ignored as there is no state change URL provided for interaction 
+2024-09-04T17:16:17.050715Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:16:17.050805Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:52958/
+2024-09-04T17:16:17.050812Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: None, body: Missing )
+2024-09-04T17:16:17.053140Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 200, headers: Some({"content-length": ["109"], "x-api-correlation-id": ["ff1ec2f1-c33e-4eaa-a4cf-108680275e0f"], "content-type": ["application/json"], "date": ["Wed, 04 Sep 2024 17:16:17 GMT"]}), body: Present(109 bytes, application/json) )
+2024-09-04T17:16:17.200990Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024-09-04T17:16:17.201005Z  WARN ThreadId(11) pact_verifier::callback_executors: State Change ignored as there is no state change URL provided for interaction 
+2024-09-04T17:16:17.201014Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:16:17.201045Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:52958/
+2024-09-04T17:16:17.201047Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: None, body: Missing )
+2024-09-04T17:16:17.202673Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 200, headers: Some({"content-length": ["109"], "content-type": ["application/json"], "date": ["Wed, 04 Sep 2024 17:16:17 GMT"], "x-api-correlation-id": ["14d99164-279d-4bba-b10e-93ac44d2113a"]}), body: Present(109 bytes, application/json) )
+2024-09-04T17:16:17.203388Z  WARN ThreadId(11) pact_matching::metrics: 
 
-        expected: 404
-             got: 200
+Please note:
+We are tracking events anonymously to gather important usage statistics like Pact version and operating system. To disable tracking, set the 'PACT_DO_NOT_TRACK' environment variable to 'true'.
 
-        (compared using eql?)
 
-    user_service_test.go:43: error verifying provider: exit status 1
+
+Verifying a pact between GoAdminService and GoUserService
+
+  A request to login with user 'sally' (0s loading, 167ms verification)
+     Given User sally does not exist
+    returns a response which
+      has status code 404 (FAILED)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+  A request to login with user 'sally' (0s loading, 149ms verification)
+     Given User sally exists
+    returns a response which
+      has status code 200 (OK)
+      includes headers
+        "Content-Type" with value "application/json" (OK)
+        "X-Api-Correlation-Id" with value "100" (OK)
+      has a matching body (OK)
+
+
+Failures:
+
+1) Verifying a pact between GoAdminService and GoUserService Given User sally does not exist - A request to login with user 'sally'
+    1.1) has status code 404
+           expected 404 but was 200
+
+There were 1 pact failures
+
+=== RUN   TestPactProvider/Provider_pact_verification
+    verifier.go:183: the verifier failed to successfully verify the pacts, this indicates an issue with the provider API
+=== NAME  TestPactProvider
+    user_service_test.go:36: the verifier failed to successfully verify the pacts, this indicates an issue with the provider API
+--- FAIL: TestPactProvider (0.65s)
+    --- FAIL: TestPactProvider/Provider_pact_verification (0.00s)
+FAIL
+FAIL    github.com/pact-foundation/pact-workshop-go/provider    0.698s
+FAIL
+make: *** [provider] Error 1
 ```
 
-We expected this failure, because the user we are requesing does in fact exist! What we want to test for, is what happens if there is a different _state_ on the Provider. This is what is referred to as "Provider states", and how Pact gets around test ordering and related issues.
+We expected this failure, because the user we are requesting does in fact exist! What we want to test for, is what happens if there is a different _state_ on the Provider. This is what is referred to as "Provider states", and how Pact gets around test ordering and related issues.
 
 We could resolve this by updating our consumer test to use a known non-existent User, but it's worth understanding how Provider states work more generally.
 
