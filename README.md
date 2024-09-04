@@ -544,9 +544,59 @@ Let's see how we go now:
 ```
 $ make provider
 
---- 🔨Running Provider Pact tests
-go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider"
-ok  	github.com/pact-foundation/pact-workshop-go/provider	22.138s
+--- 🔨Running Provider Pact tests 
+go test -count=1 -tags=integration github.com/pact-foundation/pact-workshop-go/provider -run "TestPactProvider" -v
+=== RUN   TestPactProvider
+2024/09/04 18:23:27 API starting: port 53091 ([::]:53091)
+2024-09-04T17:23:28.194956Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally does not exist' for 'A request to login with user 'sally''
+2024/09/04 18:23:28 [INFO] executing state handler middleware
+2024-09-04T17:23:28.340008Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:23:28.340096Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53094/
+2024-09-04T17:23:28.340101Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: None, body: Missing )
+2024-09-04T17:23:28.340969Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 404, headers: Some({"content-length": ["0"], "content-type": ["application/json"], "date": ["Wed, 04 Sep 2024 17:23:28 GMT"], "x-api-correlation-id": ["c958d383-d67b-4c95-b6a0-d48c77adf315"]}), body: Empty )
+2024-09-04T17:23:28.341210Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User sally does not exist' for 'A request to login with user 'sally''
+2024/09/04 18:23:28 [INFO] executing state handler middleware
+2024-09-04T17:23:28.650479Z  INFO ThreadId(11) pact_verifier: Running setup provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024/09/04 18:23:28 [INFO] executing state handler middleware
+2024-09-04T17:23:28.804271Z  INFO ThreadId(11) pact_verifier: Running provider verification for 'A request to login with user 'sally''
+2024-09-04T17:23:28.804312Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request to provider at http://localhost:53094/
+2024-09-04T17:23:28.804318Z  INFO ThreadId(11) pact_verifier::provider_client: Sending request HTTP Request ( method: GET, path: /user/10, query: None, headers: None, body: Missing )
+2024-09-04T17:23:28.805289Z  INFO ThreadId(11) pact_verifier::provider_client: Received response: HTTP Response ( status: 200, headers: Some({"content-type": ["application/json"], "content-length": ["109"], "date": ["Wed, 04 Sep 2024 17:23:28 GMT"], "x-api-correlation-id": ["5b41178d-db3e-495e-8bd5-2fd525e5eef6"]}), body: Present(109 bytes, application/json) )
+2024-09-04T17:23:28.805902Z  INFO ThreadId(11) pact_verifier: Running teardown provider state change handler 'User sally exists' for 'A request to login with user 'sally''
+2024/09/04 18:23:28 [INFO] executing state handler middleware
+2024-09-04T17:23:28.964743Z  WARN ThreadId(11) pact_matching::metrics: 
+
+Please note:
+We are tracking events anonymously to gather important usage statistics like Pact version and operating system. To disable tracking, set the 'PACT_DO_NOT_TRACK' environment variable to 'true'.
+
+
+
+Verifying a pact between GoAdminService and GoUserService
+
+  A request to login with user 'sally' (0s loading, 482ms verification)
+     Given User sally does not exist
+    returns a response which
+      has status code 404 (OK)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+  A request to login with user 'sally' (0s loading, 472ms verification)
+     Given User sally exists
+    returns a response which
+      has status code 200 (OK)
+      includes headers
+        "X-Api-Correlation-Id" with value "100" (OK)
+        "Content-Type" with value "application/json" (OK)
+      has a matching body (OK)
+
+
+=== RUN   TestPactProvider/Provider_pact_verification
+--- PASS: TestPactProvider (1.28s)
+    --- PASS: TestPactProvider/Provider_pact_verification (0.00s)
+PASS
+ok      github.com/pact-foundation/pact-workshop-go/provider    1.883s
 ```
 
 *Move on to [step 8](//github.com/pact-foundation/pact-workshop-go/tree/step8)*
