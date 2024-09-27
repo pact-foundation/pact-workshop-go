@@ -24,7 +24,7 @@ run-provider:
 
 deploy-consumer:
 	@echo "--- ✅ Checking if we can deploy consumer"
-	@pact-broker can-i-deploy \
+	pact/bin/pact-broker can-i-deploy \
 		--pacticipant $(CONSUMER_NAME) \
 		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
 		--broker-username $(PACT_BROKER_USERNAME) \
@@ -34,7 +34,7 @@ deploy-consumer:
 
 deploy-provider:
 	@echo "--- ✅ Checking if we can deploy provider"
-	@pact-broker can-i-deploy \
+	pact/bin/pact-broker can-i-deploy \
 		--pacticipant $(PROVIDER_NAME) \
 		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
 		--broker-username $(PACT_BROKER_USERNAME) \
@@ -43,7 +43,7 @@ deploy-provider:
 		--to-environment production
 record-deploy-consumer:
 	@echo "--- ✅ Recording deployment of consumer"
-	pact-broker record-deployment \
+	pact/bin/pact-broker record-deployment \
 		--pacticipant $(CONSUMER_NAME) \
 		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
 		--broker-username $(PACT_BROKER_USERNAME) \
@@ -52,7 +52,7 @@ record-deploy-consumer:
 		--environment production
 record-deploy-provider:
 	@echo "--- ✅ Recording deployment of provider"
-	pact-broker record-deployment \
+	pact/bin/pact-broker record-deployment \
 		--pacticipant $(PROVIDER_NAME) \
 		--broker-base-url ${PACT_BROKER_PROTO}://$(PACT_BROKER_URL) \
 		--broker-username $(PACT_BROKER_USERNAME) \
