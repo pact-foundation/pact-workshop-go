@@ -2,8 +2,6 @@ module github.com/pact-foundation/pact-workshop-go
 
 go 1.22
 
-toolchain go1.23.5
-
 require (
 	github.com/google/uuid v1.6.0
 	github.com/pact-foundation/pact-go/v2 v2.2.0
