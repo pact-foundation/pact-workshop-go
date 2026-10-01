@@ -2,7 +2,7 @@ version: "3"
 
 services:
   postgres:
-    image: postgres
+    image: postgres@sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722
     healthcheck:
       test: psql postgres --command "select 1" -U postgres
     ports:
@@ -13,7 +13,7 @@ services:
       POSTGRES_DB: postgres
 
   pact-broker:
-    image: pactfoundation/pact-broker:latest-multi
+    image: pactfoundation/pact-broker:latest-multi@sha256:5261a9ee7176d76d77d19d3781be67827b231bed353c2cc2aacafb5eb5a6ee70
     links:
       - postgres
     ports:
