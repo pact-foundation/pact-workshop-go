@@ -31,7 +31,7 @@ jobs:
               run: make unit
             - name: consumer pact tests
               run: make consumer
-            - uses: KengoTODA/actions-setup-docker-compose@4c09ef903b1119511e9071b6b076e904f9240f3d # v1
+            - uses: KengoTODA/actions-setup-docker-compose@3365b3ff2fc7b4e5ffa2d9ddbb3c2bd73727d443 # v1
               if: ${{ env.ACT }}
               name: Install `docker-compose` for use with act
               with:
